@@ -60,7 +60,7 @@ if (!source && startScanBtn) {
 
           // FORCE UI TRANSITION (IMPORTANT)
           qrOverlay.style.display = "none";
-          appUI.style.display = "block";
+          appUI.style.display = "flex";
         }
       );
     } catch (err) {
