@@ -183,3 +183,16 @@ button:hover {
   width: 280px;
   height: 280px;
 }
+/* --- FORCE APP VISIBILITY FIX --- */
+
+#app {
+  display: none;
+}
+
+#app.active {
+  display: flex !important;
+}
+
+#qr-overlay.hidden {
+  display: none !important;
+}

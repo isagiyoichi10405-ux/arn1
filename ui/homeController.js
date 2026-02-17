@@ -19,6 +19,18 @@ const appUI = document.getElementById("app");
 const qrStatus = document.getElementById("qr-status");
 const startScanBtn = document.getElementById("startScanBtn");
 
+function showApp() {
+  qrOverlay.classList.add("hidden");
+  appUI.classList.add("active");
+}
+
+function showQR() {
+  qrOverlay.classList.remove("hidden");
+  appUI.classList.remove("active");
+  console.log("SHOW APP CALLED");
+
+}
+
 /* -------------------------------
    SOURCE LOCATION
 --------------------------------*/
@@ -31,10 +43,7 @@ const rawLoc = params.get("loc");
 if (rawLoc) {
   source = normalize(rawLoc);
   locText.innerText = source;
-
-  // FORCE UI STATE
-  qrOverlay.style.display = "none";
-  appUI.style.display = "block";
+  showApp();
 }
 
 /* -------------------------------
@@ -57,10 +66,7 @@ if (!source && startScanBtn) {
           qrStatus.innerText = `Location detected: ${source}`;
 
           scanner.stop();
-
-          // FORCE UI TRANSITION (IMPORTANT)
-          qrOverlay.style.display = "none";
-          appUI.style.display = "flex";
+          showApp();
         }
       );
     } catch (err) {
