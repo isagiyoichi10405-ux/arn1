@@ -162,3 +162,23 @@ button:hover {
   object-fit: cover;
   z-index: -2;
 }
+.hidden {
+  display: none;
+}
+
+#qr-overlay {
+  position: fixed;
+  inset: 0;
+  background: black;
+  color: white;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#qr-reader {
+  width: 280px;
+  margin: 20px 0;
+}
