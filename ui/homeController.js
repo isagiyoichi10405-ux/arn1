@@ -8,25 +8,69 @@ import { setRoute } from "../state/navigationStore.js";
 const normalize = s => s.replace(/\s+/g, "_").toUpperCase();
 
 /* -------------------------------
-   SOURCE LOCATION (QR or URL)
+   UI REFERENCES
 --------------------------------*/
+const locText = document.getElementById("locText");
+const startBtn = document.getElementById("startBtn");
+
+// QR UI (from index.html)
+const qrOverlay = document.getElementById("qr-overlay");
+const appUI = document.getElementById("app");
+const qrStatus = document.getElementById("qr-status");
+const startScanBtn = document.getElementById("startScanBtn");
+
+/* -------------------------------
+   SOURCE LOCATION
+--------------------------------*/
+let source = null;
+
+// Case 1: URL param (?loc=ENTRY)
 const params = new URLSearchParams(window.location.search);
 const rawLoc = params.get("loc");
 
-let source = null;
-
-// Case 1: location came from URL (QR redirect or manual test)
 if (rawLoc) {
   source = normalize(rawLoc);
-  document.getElementById("locText").innerText = source;
+  locText.innerText = source;
+  qrOverlay.classList.add("hidden");
+  appUI.classList.remove("hidden");
+}
+
+/* -------------------------------
+   QR SCANNING (USER-TRIGGERED)
+--------------------------------*/
+if (!source && startScanBtn) {
+  const scanner = new Html5Qrcode("qr-reader");
+
+  startScanBtn.onclick = async () => {
+    try {
+      qrStatus.innerText = "Starting camera...";
+
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        qrText => {
+          source = normalize(qrText);
+
+          locText.innerText = source;
+          qrStatus.innerText = `Location detected: ${source}`;
+
+          scanner.stop();
+          qrOverlay.classList.add("hidden");
+          appUI.classList.remove("hidden");
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      qrStatus.innerText = "Camera permission denied or unavailable";
+    }
+  };
 }
 
 /* -------------------------------
    START NAVIGATION
 --------------------------------*/
-document.getElementById("startBtn").onclick = () => {
+startBtn.onclick = () => {
 
-  // Enforce QR scan first
   if (!source) {
     alert("Please scan location QR first");
     return;
