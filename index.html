@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AR Connect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="main-container">
+    <h1>📍 AR Connect</h1>
+    <p>Scan • Search • Navigate</p>
+
+    <input id="destinationInput" type="text" placeholder="Enter Block" list="blocks">
+
+    <datalist id="blocks">
+      <option value="ENTRY">
+      <option value="B0">
+      <option value="B1">
+      <option value="B2">
+      <option value="B3">
+      <option value="B4">
+      <option value="B5">
+      <option value="B6">
+      <option value="B7">
+      <option value="B8">
+      <option value="B9">
+      <option value="B10">
+      <option value="B11">
+      <option value="ADMIN BLOCK">
+      <option value="Girls Hostel">
+      <option value="Boys Hostel">
+    </datalist>
+
+    <p>📍 Current Location: <span id="locText">Detecting...</span></p>
+    <button id="startBtn">Start Navigation</button>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

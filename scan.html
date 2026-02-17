@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scan Location QR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: Arial;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #qr-reader {
+      width: 300px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Scan Location QR</h2>
+  <div id="qr-reader"></div>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script>
+    const scanner = new Html5Qrcode("qr-reader");
+
+    scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      qrText => {
+        // qrText should be like ENTRY, B1, ADMIN_BLOCK
+        scanner.stop();
+        window.location.href = `index.html?loc=${qrText}`;
+      }
+    );
+  </script>
+</body>
+</html>
+
