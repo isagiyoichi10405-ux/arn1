@@ -163,8 +163,9 @@ button:hover {
   z-index: -2;
 }
 .hidden {
-  display: none;
+  display: none !important;
 }
+
 
 #qr-overlay {
   position: fixed;

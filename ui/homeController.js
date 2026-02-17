@@ -13,7 +13,7 @@ const normalize = s => s.replace(/\s+/g, "_").toUpperCase();
 const locText = document.getElementById("locText");
 const startBtn = document.getElementById("startBtn");
 
-// QR UI (from index.html)
+// QR UI
 const qrOverlay = document.getElementById("qr-overlay");
 const appUI = document.getElementById("app");
 const qrStatus = document.getElementById("qr-status");
@@ -31,8 +31,10 @@ const rawLoc = params.get("loc");
 if (rawLoc) {
   source = normalize(rawLoc);
   locText.innerText = source;
-  qrOverlay.classList.add("hidden");
-  appUI.classList.remove("hidden");
+
+  // FORCE UI STATE
+  qrOverlay.style.display = "none";
+  appUI.style.display = "block";
 }
 
 /* -------------------------------
@@ -55,8 +57,10 @@ if (!source && startScanBtn) {
           qrStatus.innerText = `Location detected: ${source}`;
 
           scanner.stop();
-          qrOverlay.classList.add("hidden");
-          appUI.classList.remove("hidden");
+
+          // FORCE UI TRANSITION (IMPORTANT)
+          qrOverlay.style.display = "none";
+          appUI.style.display = "block";
         }
       );
     } catch (err) {
