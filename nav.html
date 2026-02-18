@@ -1,37 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Navigation</title>
+  <title>AR Navigation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="style.css">
 </head>
 
-<body style="margin:0; overflow:hidden;">
+<body>
 
-  <!-- Camera feed -->
+  <!-- Camera -->
   <video id="camera" autoplay playsinline></video>
 
-  <!-- UI overlay -->
+  <!-- UI Overlay -->
   <div class="nav-ui-overlay">
     <button class="back-btn-nav" onclick="location.href='index.html'">← Back</button>
+
     <div class="nav-card">
-      <div id="instruction">Loading route...</div>
+      <div id="instruction">Loading...</div>
       <div id="distance"></div>
     </div>
   </div>
 
-  <!-- Three.js canvas -->
+  <!-- Three.js Canvas -->
   <div id="canvas-container"></div>
 
   <script type="importmap">
     {
       "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
       }
     }
   </script>
 
   <script type="module" src="ui/navController.js"></script>
 </body>
-
 </html>
