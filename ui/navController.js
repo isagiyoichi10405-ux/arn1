@@ -1,14 +1,12 @@
 import * as THREE from "three";
 import { campusCoords } from "../data/campusMap.js";
 
-/* ---------------- CAMERA FEED ---------------- */
 navigator.mediaDevices.getUserMedia({
   video: { facingMode: "environment" }
 }).then(stream => {
   document.getElementById("camera").srcObject = stream;
 });
 
-/* ---------------- LOAD ROUTE ---------------- */
 const saved = JSON.parse(sessionStorage.getItem("navState"));
 if (!saved || !saved.path) {
   alert("No route data");
@@ -19,17 +17,14 @@ const path = saved.path;
 let index = 0;
 let current = path[index];
 
-/* ---------------- LOAD QR ANCHOR ---------------- */
 const anchor = JSON.parse(sessionStorage.getItem("qrAnchor"));
 
-/* ---------------- UI ---------------- */
 const instruction = document.getElementById("instruction");
 const distance = document.getElementById("distance");
 
 instruction.innerText = `Destination: ${path.at(-1)}`;
 distance.innerText = `${path.length - 1} steps`;
 
-/* ---------------- THREE SETUP ---------------- */
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
@@ -43,7 +38,6 @@ const renderer = new THREE.WebGLRenderer({ alpha: true });
 renderer.setSize(innerWidth, innerHeight);
 document.getElementById("canvas-container").appendChild(renderer.domElement);
 
-/* ---------------- AR ARROW ---------------- */
 const arrow = new THREE.Mesh(
   new THREE.ConeGeometry(0.25, 0.9, 20),
   new THREE.MeshBasicMaterial({ color: 0x00ff00 })
@@ -56,11 +50,9 @@ arrow.frustumCulled = false;
 camera.add(arrow);
 scene.add(camera);
 
-/* ---------------- DEVICE ORIENTATION ---------------- */
 let yaw = 0;
 let lastAlpha = null;
 
-// HARD RESET YAW FROM QR HEADING
 if (anchor && typeof anchor.heading === "number") {
   yaw = THREE.MathUtils.degToRad(anchor.heading);
 }
@@ -69,7 +61,7 @@ if (
   typeof DeviceOrientationEvent !== "undefined" &&
   typeof DeviceOrientationEvent.requestPermission === "function"
 ) {
-  DeviceOrientationEvent.requestPermission().catch(console.error);
+  DeviceOrientationEvent.requestPermission().catch(() => {});
 }
 
 window.addEventListener("deviceorientation", e => {
@@ -84,7 +76,6 @@ window.addEventListener("deviceorientation", e => {
   lastAlpha = e.alpha;
 });
 
-/* ---------------- NAV MATH ---------------- */
 function angle(a, b) {
   const p1 = campusCoords[a];
   const p2 = campusCoords[b];
@@ -97,7 +88,7 @@ function updateInstruction() {
   const next = path[index + 1];
 
   if (!prev || !next) {
-    instruction.innerText = "Go straight";
+    instruction.innerText = "You have arrived";
     return;
   }
 
@@ -107,7 +98,28 @@ function updateInstruction() {
   else instruction.innerText = "Go straight";
 }
 
-/* ---------------- MINIMAP ---------------- */
+function applyQRAnchor(a) {
+  if (!a || !a.id) return;
+
+  const idx = path.indexOf(a.id);
+  if (idx === -1) return;
+
+  index = idx;
+  current = path[index];
+
+  if (typeof a.heading === "number") {
+    yaw = THREE.MathUtils.degToRad(a.heading);
+    lastAlpha = null;
+  }
+
+  updateInstruction();
+  distance.innerText = `${path.length - index - 1} steps`;
+}
+
+if (anchor) {
+  applyQRAnchor(anchor);
+}
+
 const map = document.createElement("canvas");
 map.width = 150;
 map.height = 150;
@@ -120,6 +132,20 @@ map.style.zIndex = 999;
 document.body.appendChild(map);
 
 const ctx = map.getContext("2d");
+
+function drawUserArrow(x, y, a) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(a);
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.moveTo(0, -10);
+  ctx.lineTo(6, 8);
+  ctx.lineTo(-6, 8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
 
 function drawMiniMap() {
   ctx.clearRect(0, 0, 150, 150);
@@ -144,13 +170,17 @@ function drawMiniMap() {
   ctx.stroke();
 
   const c = campusCoords[current];
+  const cx = sx(c.x);
+  const cy = sz(c.z);
+
   ctx.fillStyle = "#00ff00";
   ctx.beginPath();
-  ctx.arc(sx(c.x), sz(c.z), 6, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 5, 0, Math.PI * 2);
   ctx.fill();
+
+  drawUserArrow(cx, cy, yaw);
 }
 
-/* ---------------- RENDER LOOP ---------------- */
 function animate() {
   requestAnimationFrame(animate);
 
@@ -165,12 +195,22 @@ function animate() {
 
 animate();
 
-/* ---------------- SIMULATED WALK ---------------- */
-setInterval(() => {
-  index++;
-  if (index >= path.length - 1) return;
+import("https://unpkg.com/html5-qrcode").then(() => {
+  const qrScanner = new Html5Qrcode("qr-reader");
 
-  current = path[index];
-  updateInstruction();
-  distance.innerText = `${path.length - index - 1} steps`;
-}, 4000);
+  qrScanner.start(
+    { facingMode: "environment" },
+    { fps: 5, qrbox: 200 },
+    qrText => {
+      let data;
+      try {
+        data = JSON.parse(qrText);
+      } catch {
+        return;
+      }
+
+      sessionStorage.setItem("qrAnchor", JSON.stringify(data));
+      applyQRAnchor(data);
+    }
+  );
+});
