@@ -53,10 +53,6 @@ scene.add(camera);
 let yaw = 0;
 let lastAlpha = null;
 
-if (anchor && typeof anchor.heading === "number") {
-  yaw = THREE.MathUtils.degToRad(anchor.heading);
-}
-
 if (
   typeof DeviceOrientationEvent !== "undefined" &&
   typeof DeviceOrientationEvent.requestPermission === "function"
@@ -106,11 +102,6 @@ function applyQRAnchor(a) {
 
   index = idx;
   current = path[index];
-
-  if (typeof a.heading === "number") {
-    yaw = THREE.MathUtils.degToRad(a.heading);
-    lastAlpha = null;
-  }
 
   updateInstruction();
   distance.innerText = `${path.length - index - 1} steps`;
@@ -183,7 +174,6 @@ function drawMiniMap() {
 
 function animate() {
   requestAnimationFrame(animate);
-
   camera.rotation.set(0, yaw, 0);
 
   const next = path[index + 1];
@@ -203,10 +193,11 @@ import("https://unpkg.com/html5-qrcode").then(() => {
     { fps: 5, qrbox: 200 },
     qrText => {
       let data;
+
       try {
         data = JSON.parse(qrText);
       } catch {
-        return;
+        data = { id: qrText };
       }
 
       sessionStorage.setItem("qrAnchor", JSON.stringify(data));
