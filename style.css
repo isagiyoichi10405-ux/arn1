@@ -68,7 +68,29 @@ body {
   opacity: 0.9;
 }
 
-/* Minimap canvas injected via JS */
 canvas {
   touch-action: none;
+}
+/* ===== MOBILE AR OVERRIDES ===== */
+
+body:has(#camera) {
+  background: black;
+  display: block;
+}
+
+body:has(#camera)::after {
+  display: none;
+}
+
+#instruction {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+#distance {
+  font-size: 1.1rem;
+}
+
+.nav-card {
+  background: rgba(0,0,0,0.65);
 }

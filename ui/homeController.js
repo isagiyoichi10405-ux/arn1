@@ -13,7 +13,6 @@ const normalize = s => s.replace(/\s+/g, "_").toUpperCase();
 const locText = document.getElementById("locText");
 const startBtn = document.getElementById("startBtn");
 
-// QR UI
 const qrOverlay = document.getElementById("qr-overlay");
 const appUI = document.getElementById("app");
 const qrStatus = document.getElementById("qr-status");
@@ -24,46 +23,48 @@ function showApp() {
   appUI.classList.add("active");
 }
 
-function showQR() {
-  qrOverlay.classList.remove("hidden");
-  appUI.classList.remove("active");
-  console.log("SHOW APP CALLED");
-
-}
-
 /* -------------------------------
-   SOURCE LOCATION
+   SOURCE + HEADING
 --------------------------------*/
 let source = null;
-
-// Case 1: URL param (?loc=ENTRY)
-const params = new URLSearchParams(window.location.search);
-const rawLoc = params.get("loc");
-
-if (rawLoc) {
-  source = normalize(rawLoc);
-  locText.innerText = source;
-  showApp();
-}
+let heading = null;
 
 /* -------------------------------
-   QR SCANNING (USER-TRIGGERED)
+   QR SCANNING
 --------------------------------*/
-if (!source && startScanBtn) {
+if (startScanBtn) {
   const scanner = new Html5Qrcode("qr-reader");
 
   startScanBtn.onclick = async () => {
     try {
-      qrStatus.innerText = "Starting camera...";
-
+      qrStatus.innerText = "Scanning...";
       await scanner.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
         qrText => {
-          source = normalize(qrText);
+          let data;
+          try {
+            data = JSON.parse(qrText);
+          } catch {
+            alert("Invalid QR code");
+            return;
+          }
+
+          source = normalize(data.id);
+          heading = data.heading;
+
+          if (!campusCoords[source]) {
+            alert("Unknown location in QR");
+            return;
+          }
+
+          sessionStorage.setItem(
+            "qrAnchor",
+            JSON.stringify({ id: source, heading })
+          );
 
           locText.innerText = source;
-          qrStatus.innerText = `Location detected: ${source}`;
+          qrStatus.innerText = `Anchored at ${source}`;
 
           scanner.stop();
           showApp();
@@ -71,7 +72,7 @@ if (!source && startScanBtn) {
       );
     } catch (err) {
       console.error(err);
-      qrStatus.innerText = "Camera permission denied or unavailable";
+      qrStatus.innerText = "Camera error";
     }
   };
 }
@@ -80,9 +81,8 @@ if (!source && startScanBtn) {
    START NAVIGATION
 --------------------------------*/
 startBtn.onclick = () => {
-
   if (!source) {
-    alert("Please scan location QR first");
+    alert("Scan location QR first");
     return;
   }
 
@@ -107,6 +107,7 @@ startBtn.onclick = () => {
   }
 
   setRoute({ source, destination, path });
+
   sessionStorage.setItem(
     "navState",
     JSON.stringify({ source, destination, path })

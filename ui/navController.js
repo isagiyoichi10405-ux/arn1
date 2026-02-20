@@ -11,13 +11,16 @@ navigator.mediaDevices.getUserMedia({
 /* ---------------- LOAD ROUTE ---------------- */
 const saved = JSON.parse(sessionStorage.getItem("navState"));
 if (!saved || !saved.path) {
-  alert("No route found");
+  alert("No route data");
   location.href = "index.html";
 }
 
 const path = saved.path;
 let index = 0;
 let current = path[index];
+
+/* ---------------- LOAD QR ANCHOR ---------------- */
+const anchor = JSON.parse(sessionStorage.getItem("qrAnchor"));
 
 /* ---------------- UI ---------------- */
 const instruction = document.getElementById("instruction");
@@ -56,6 +59,11 @@ scene.add(camera);
 /* ---------------- DEVICE ORIENTATION ---------------- */
 let yaw = 0;
 let lastAlpha = null;
+
+// HARD RESET YAW FROM QR HEADING
+if (anchor && typeof anchor.heading === "number") {
+  yaw = THREE.MathUtils.degToRad(anchor.heading);
+}
 
 if (
   typeof DeviceOrientationEvent !== "undefined" &&
