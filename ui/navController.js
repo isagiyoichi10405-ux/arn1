@@ -2,12 +2,13 @@ import * as THREE from "three";
 import { campusCoords } from "../data/campusMap.js";
 
 /* ===============================
-   CAMERA FEED
+   CAMERA FEED (AR BACKGROUND)
 ================================ */
+const video = document.getElementById("camera");
 navigator.mediaDevices.getUserMedia({
   video: { facingMode: "environment" }
 }).then(stream => {
-  document.getElementById("camera").srcObject = stream;
+  video.srcObject = stream;
 });
 
 /* ===============================
@@ -50,14 +51,15 @@ renderer.setSize(innerWidth, innerHeight);
 document.getElementById("canvas-container").appendChild(renderer.domElement);
 
 /* ===============================
-   AR ARROW
+   AR ARROW (FIXED ORIENTATION)
 ================================ */
 const arrow = new THREE.Mesh(
-  new THREE.ConeGeometry(0.25, 0.9, 20),
+  new THREE.ConeGeometry(0.25, 0.9, 24),
   new THREE.MeshBasicMaterial({ color: 0x00ff00 })
 );
 
-arrow.rotation.x = Math.PI / 2;
+// align cone forward
+arrow.rotation.set(Math.PI / 2, 0, Math.PI);
 arrow.position.set(0, -0.45, -1.5);
 arrow.frustumCulled = false;
 
@@ -65,7 +67,7 @@ camera.add(arrow);
 scene.add(camera);
 
 /* ===============================
-   DEVICE ORIENTATION
+   DEVICE ORIENTATION (ABSOLUTE)
 ================================ */
 let yaw = 0;
 
@@ -101,7 +103,7 @@ function updateInstruction() {
 }
 
 /* ===============================
-   END SCREEN UX
+   END SCREEN
 ================================ */
 const endScreen = document.createElement("div");
 endScreen.className = "end-screen hidden";
@@ -109,7 +111,7 @@ endScreen.innerHTML = `
   <div class="end-card">
     <div class="checkmark">✔</div>
     <h2>You're Here</h2>
-    <p>Destination confirmed successfully.</p>
+    <p>Destination confirmed.</p>
     <button id="endNavBtn">End Navigation</button>
   </div>
 `;
@@ -117,8 +119,7 @@ document.body.appendChild(endScreen);
 
 document.addEventListener("click", e => {
   if (e.target.id === "endNavBtn") {
-    sessionStorage.removeItem("navState");
-    sessionStorage.removeItem("qrAnchor");
+    sessionStorage.clear();
     location.href = "index.html";
   }
 });
@@ -126,16 +127,15 @@ document.addEventListener("click", e => {
 function showArrival() {
   arrived = true;
   arrow.visible = false;
-  endScreen.classList.remove("hidden");
   scanBtn.remove();
+  endScreen.classList.remove("hidden");
 }
 
-
 /* ===============================
-   QR LOCATION UPDATE
+   APPLY QR LOCATION
 ================================ */
 function applyQRAnchor(anchor) {
-  if (!anchor || !anchor.id) return;
+  if (!anchor?.id) return;
 
   const idx = path.indexOf(anchor.id);
   if (idx === -1) return;
@@ -143,7 +143,6 @@ function applyQRAnchor(anchor) {
   index = idx;
   current = path[index];
 
-  // FINAL DESTINATION CONFIRMATION
   if (anchor.id === path.at(-1)) {
     instruction.innerText = "Destination reached";
     distance.innerText = "0 steps";
@@ -156,7 +155,7 @@ function applyQRAnchor(anchor) {
 }
 
 /* ===============================
-   RESTORE PREVIOUS QR
+   RESTORE LAST QR
 ================================ */
 const savedAnchor = JSON.parse(sessionStorage.getItem("qrAnchor"));
 if (savedAnchor) applyQRAnchor(savedAnchor);
@@ -175,7 +174,8 @@ const ctx = map.getContext("2d");
 function drawUserArrow(x, y, a) {
   ctx.save();
   ctx.translate(x, y);
-  ctx.rotate(-a);
+  ctx.scale(1, -1);   // CRITICAL FIX
+  ctx.rotate(a);
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
   ctx.moveTo(0, -10);
@@ -236,45 +236,50 @@ function animate() {
   drawMiniMap();
   renderer.render(scene, camera);
 }
-
 animate();
 
 /* ===============================
-   QR SCANNER
-================================ */
-let qrScanner;
-
-import("https://unpkg.com/html5-qrcode").then(() => {
-  qrScanner = new Html5Qrcode("qr-reader");
-
-  scanBtn.onclick = () => {
-    scanBtn.innerText = "Scanning...";
-    scanBtn.disabled = true;
-
-    qrScanner.start(
-      { facingMode: "environment" },
-      { fps: 5, qrbox: 220 },
-      qrText => {
-        let data;
-        try {
-          data = JSON.parse(qrText);
-        } catch {
-          data = { id: qrText.trim() };
-        }
-
-        sessionStorage.setItem("qrAnchor", JSON.stringify(data));
-        applyQRAnchor(data);
-
-        qrScanner.stop();
-        scanBtn.remove();
-      }
-    );
-  };
-});
-/* ===============================
-   DESTINATION QR SCAN BUTTON
+   DESTINATION QR SCANNER (OVERLAY)
 ================================ */
 const scanBtn = document.createElement("button");
 scanBtn.className = "scan-dest-btn";
 scanBtn.innerText = "Scan Destination QR";
 document.body.appendChild(scanBtn);
+
+const scanOverlay = document.createElement("div");
+scanOverlay.className = "scan-overlay hidden";
+scanOverlay.innerHTML = `
+  <div id="dest-qr-reader"></div>
+  <button class="close-scan">Cancel</button>
+`;
+document.body.appendChild(scanOverlay);
+
+let destScanner;
+
+import("https://unpkg.com/html5-qrcode").then(() => {
+  destScanner = new Html5Qrcode("dest-qr-reader");
+
+  scanBtn.onclick = async () => {
+    scanOverlay.classList.remove("hidden");
+    await destScanner.start(
+      { facingMode: "environment" },
+      { fps: 6, qrbox: 220 },
+      qrText => {
+        let data;
+        try { data = JSON.parse(qrText); }
+        catch { data = { id: qrText.trim() }; }
+
+        sessionStorage.setItem("qrAnchor", JSON.stringify(data));
+        applyQRAnchor(data);
+
+        destScanner.stop();
+        scanOverlay.classList.add("hidden");
+      }
+    );
+  };
+
+  scanOverlay.querySelector(".close-scan").onclick = async () => {
+    await destScanner.stop();
+    scanOverlay.classList.add("hidden");
+  };
+});

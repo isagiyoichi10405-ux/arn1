@@ -109,7 +109,6 @@ button {
 
 button:active {
   transform: scale(0.97);
-  box-shadow: 0 6px 14px rgba(0, 114, 255, 0.3);
 }
 
 button:disabled {
@@ -122,11 +121,10 @@ button:disabled {
    =============================== */
 #startScanBtn {
   background: linear-gradient(135deg, #00ff99, #00cc66);
-  box-shadow: 0 10px 24px rgba(0, 204, 102, 0.35);
 }
 
 /* ===============================
-   QR OVERLAY
+   QR OVERLAY (HOME)
    =============================== */
 #qr-overlay {
   position: fixed;
@@ -152,8 +150,6 @@ button:disabled {
 /* ===============================
    NAVIGATION (AR PAGE)
    =============================== */
-
-/* Disable decorative background in AR */
 body:has(#camera) {
   background: black;
 }
@@ -172,7 +168,7 @@ body:has(#camera)::after {
   z-index: -2;
 }
 
-/* Overlay */
+/* UI Overlay */
 .nav-ui-overlay {
   position: fixed;
   top: 12px;
@@ -189,11 +185,8 @@ body:has(#camera)::after {
 .back-btn-nav {
   pointer-events: auto;
   background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
   padding: 10px 16px;
   border-radius: 12px;
-  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -204,7 +197,6 @@ body:has(#camera)::after {
   backdrop-filter: blur(8px);
   padding: 16px 18px;
   border-radius: 16px;
-  color: white;
 }
 
 /* Instruction Text */
@@ -219,14 +211,83 @@ body:has(#camera)::after {
   opacity: 0.9;
 }
 
-/* Canvas */
+/* Three.js Canvas */
 canvas {
   touch-action: none;
+  z-index: 1;
 }
+
+/* ===============================
+   MINIMAP
+================================ */
+.minimap {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 160px;
+  height: 160px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 14px;
+  z-index: 999;
+  pointer-events: none;
+}
+
+/* ===============================
+   DESTINATION SCAN BUTTON
+================================ */
+.scan-dest-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  max-width: 360px;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+  box-shadow: 0 10px 24px rgba(0, 204, 102, 0.4);
+  z-index: 1000;
+}
+
+/* ===============================
+   DESTINATION QR SCAN OVERLAY
+================================ */
+.scan-overlay {
+  position: fixed;
+  inset: 0;
+  background: black;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.scan-overlay.hidden {
+  display: none;
+}
+
+#dest-qr-reader {
+  width: 260px;
+  height: 260px;
+}
+
+.close-scan {
+  margin-top: 20px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #ff5555;
+  color: white;
+  font-weight: 700;
+}
+
 /* ===============================
    END SCREEN
 ================================ */
-
 .end-screen {
   position: fixed;
   inset: 0;
@@ -255,47 +316,4 @@ canvas {
   font-size: 3rem;
   color: #00ff88;
   margin-bottom: 16px;
-}
-
-.end-card h2 {
-  margin-bottom: 10px;
-}
-
-.end-card p {
-  margin-bottom: 20px;
-  opacity: 0.85;
-}
-/* ===============================
-   MINIMAP
-================================ */
-.minimap {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  width: 160px;
-  height: 160px;
-  background: rgba(0, 0, 0, 0.65);
-  border-radius: 14px;
-  z-index: 999;
-  pointer-events: none;
-}
-/* ===============================
-   DESTINATION SCAN BUTTON
-================================ */
-.scan-dest-btn {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 48px);
-  max-width: 360px;
-  padding: 16px;
-  border-radius: 16px;
-  border: none;
-  font-size: 1rem;
-  font-weight: 700;
-  color: white;
-  background: linear-gradient(135deg, #00ff88, #00cc66);
-  box-shadow: 0 10px 24px rgba(0, 204, 102, 0.4);
-  z-index: 1000;
 }
