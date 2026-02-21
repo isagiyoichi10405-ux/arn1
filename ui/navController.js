@@ -1,7 +1,14 @@
 import * as THREE from "three";
 import { campusCoords } from "../data/campusMap.js";
 
-/* CAMERA */
+/* ===============================
+   FORCE AR MODE (CSS FALLBACK)
+================================ */
+document.body.classList.add("ar-mode");
+
+/* ===============================
+   CAMERA FEED
+================================ */
 const video = document.getElementById("camera");
 navigator.mediaDevices.getUserMedia({
   video: { facingMode: "environment" }
@@ -9,7 +16,9 @@ navigator.mediaDevices.getUserMedia({
   video.srcObject = stream;
 });
 
-/* LOAD STATE */
+/* ===============================
+   LOAD NAV STATE
+================================ */
 const navState = JSON.parse(sessionStorage.getItem("navState"));
 if (!navState || !navState.path) {
   alert("No route data");
@@ -21,21 +30,34 @@ let index = 0;
 let current = path[index];
 let arrived = false;
 
-/* UI */
+/* ===============================
+   UI ELEMENTS
+================================ */
 const instruction = document.getElementById("instruction");
 const distance = document.getElementById("distance");
 
 instruction.innerText = `Destination: ${path.at(-1)}`;
 distance.innerText = `${path.length - 1} steps`;
 
-/* THREE */
+/* ===============================
+   THREE.JS SETUP
+================================ */
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.01, 50);
+
+const camera = new THREE.PerspectiveCamera(
+  70,
+  innerWidth / innerHeight,
+  0.01,
+  50
+);
+
 const renderer = new THREE.WebGLRenderer({ alpha: true });
 renderer.setSize(innerWidth, innerHeight);
 document.getElementById("canvas-container").appendChild(renderer.domElement);
 
-/* AR ARROW */
+/* ===============================
+   AR ARROW
+================================ */
 const arrow = new THREE.Mesh(
   new THREE.ConeGeometry(0.25, 0.9, 24),
   new THREE.MeshBasicMaterial({ color: 0x00ff00 })
@@ -43,10 +65,14 @@ const arrow = new THREE.Mesh(
 
 arrow.rotation.set(Math.PI / 2, 0, Math.PI);
 arrow.position.set(0, -0.45, -1.5);
+arrow.frustumCulled = false;
+
 camera.add(arrow);
 scene.add(camera);
 
-/* ORIENTATION */
+/* ===============================
+   DEVICE ORIENTATION
+================================ */
 let yaw = 0;
 let wrongDirTimer = 0;
 const WRONG_DIR_LIMIT = Math.PI / 2;
@@ -56,7 +82,9 @@ window.addEventListener("deviceorientation", e => {
   yaw = -THREE.MathUtils.degToRad(e.alpha);
 });
 
-/* HELPERS */
+/* ===============================
+   NAV HELPERS
+================================ */
 function angle(a, b) {
   const p1 = campusCoords[a];
   const p2 = campusCoords[b];
@@ -90,35 +118,117 @@ function updateInstruction() {
     instruction.innerText = `Go straight • ${dist} m`;
 }
 
-/* MINIMAP */
+/* ===============================
+   MINIMAP SETUP
+================================ */
 const map = document.createElement("canvas");
 map.width = 160;
 map.height = 160;
 map.className = "minimap";
 document.body.appendChild(map);
+
 const ctx = map.getContext("2d");
 
+function drawUserArrow(x, y, a) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1, -1);
+  ctx.rotate(a);
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.moveTo(0, -8);
+  ctx.lineTo(5, 6);
+  ctx.lineTo(-5, 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawLabel(text, x, y, color = "#ffffff") {
+  ctx.save();
+  ctx.scale(1, -1);
+  ctx.fillStyle = color;
+  ctx.font = "10px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(text, x, -y - 6);
+  ctx.restore();
+}
+
+/* ===============================
+   DRAW MINIMAP (WITH LABELS)
+================================ */
 function drawMiniMap() {
   ctx.clearRect(0, 0, 160, 160);
+
   const nodes = path.map(id => campusCoords[id]);
-  const minX = Math.min(...nodes.map(n => n.x));
-  const maxX = Math.max(...nodes.map(n => n.x));
-  const minZ = Math.min(...nodes.map(n => n.z));
-  const maxZ = Math.max(...nodes.map(n => n.z));
+  const xs = nodes.map(n => n.x);
+  const zs = nodes.map(n => n.z);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minZ = Math.min(...zs), maxZ = Math.max(...zs);
 
   const sx = x => ((x - minX) / (maxX - minX)) * 120 + 20;
   const sz = z => ((z - minZ) / (maxZ - minZ)) * 120 + 20;
 
+  /* PATH */
+  ctx.save();
+  ctx.scale(1, -1);
   ctx.strokeStyle = "#00c6ff";
+  ctx.lineWidth = 2;
   ctx.beginPath();
   path.forEach((id, i) => {
     const p = campusCoords[id];
-    i === 0 ? ctx.moveTo(sx(p.x), sz(p.z)) : ctx.lineTo(sx(p.x), sz(p.z));
+    i === 0
+      ? ctx.moveTo(sx(p.x), -sz(p.z))
+      : ctx.lineTo(sx(p.x), -sz(p.z));
   });
   ctx.stroke();
+
+  /* NODES */
+  path.forEach((id, i) => {
+    const p = campusCoords[id];
+    let color = "rgba(255,255,255,0.7)";
+
+    if (i === 0) color = "#00ffcc";                     // START
+    else if (i === path.length - 1) color = "#ff5555"; // END
+    else if (i === index) color = "#00ff88";           // CURRENT
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(sx(p.x), -sz(p.z), 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.restore();
+
+  /* LABELS (CHECKPOINTS ONLY) */
+  path.forEach((id, i) => {
+    const p = campusCoords[id];
+
+    if (
+      i === 0 ||
+      i === path.length - 1 ||
+      i === index ||
+      id.startsWith("B") ||
+      id.includes("HOSTEL") ||
+      id.includes("ADMIN")
+    ) {
+      let label = id;
+      if (i === 0) label = "START";
+      else if (i === path.length - 1) label = "END";
+
+      drawLabel(label, sx(p.x), sz(p.z));
+    }
+  });
+
+  /* USER ARROW */
+  const c = campusCoords[current];
+  drawUserArrow(sx(c.x), sz(c.z), yaw);
 }
 
-/* REROUTE BUTTON */
+/* ===============================
+   REROUTE BUTTON
+================================ */
 const rerouteBtn = document.createElement("button");
 rerouteBtn.className = "scan-dest-btn";
 rerouteBtn.style.bottom = "80px";
@@ -132,15 +242,19 @@ rerouteBtn.onclick = () => {
   updateInstruction();
 };
 
-/* LOOP */
+/* ===============================
+   RENDER LOOP
+================================ */
 function animate() {
   requestAnimationFrame(animate);
+
   camera.rotation.set(0, yaw, 0);
 
   const next = path[index + 1];
   if (next && !arrived) {
     const target = angle(current, next);
     const diff = Math.abs(target - yaw);
+
     arrow.rotation.z = target - yaw;
 
     if (diff > WRONG_DIR_LIMIT) {
