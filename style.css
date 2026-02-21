@@ -1,60 +1,20 @@
-/* ===============================
-   RESET
-   =============================== */
+/* RESET */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* ===============================
-   GLOBAL BODY
-   =============================== */
 body {
   height: 100vh;
   font-family: system-ui, Arial, sans-serif;
   overflow: hidden;
   background-color: #152f41;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 80px 80px;
   color: white;
-  position: relative;
 }
 
-/* Pulse animation (HOME only) */
-body::after {
-  content: "";
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: rgba(0, 198, 255, 0.18);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation: pulse 4s ease-out infinite;
-  pointer-events: none;
-}
-
-@keyframes pulse {
-  0% {
-    transform: translate(-50%, -50%) scale(0.6);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.4);
-    opacity: 0;
-  }
-}
-
-/* ===============================
-   HOME / QR PAGE
-   =============================== */
+/* HOME UI */
 .main-container {
-  position: relative;
-  z-index: 2;
   width: 90%;
   max-width: 420px;
   margin: auto;
@@ -69,96 +29,24 @@ body::after {
   text-align: center;
 }
 
-h1 {
-  font-size: 1.8rem;
-  font-weight: 800;
-}
-
-/* ===============================
-   INPUT
-   =============================== */
 input {
-  width: 100%;
-  padding: 14px 16px;
+  padding: 14px;
   border-radius: 12px;
   border: none;
   outline: none;
-  font-size: 1rem;
-  background: rgba(255, 255, 255, 0.95);
-  color: #111;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
-/* ===============================
-   BUTTONS (GLOBAL)
-   =============================== */
 button {
-  width: 100%;
-  padding: 16px 18px;
-  border: none;
+  padding: 16px;
   border-radius: 14px;
+  border: none;
   background: linear-gradient(135deg, #00c6ff, #0072ff);
   color: white;
-  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 0.3px;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(0, 114, 255, 0.35);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
-button:active {
-  transform: scale(0.97);
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* ===============================
-   START SCAN BUTTON
-   =============================== */
-#startScanBtn {
-  background: linear-gradient(135deg, #00ff99, #00cc66);
-}
-
-/* ===============================
-   QR OVERLAY (HOME)
-   =============================== */
-#qr-overlay {
-  position: fixed;
-  inset: 0;
-  background: black;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-}
-
-#qr-reader {
-  width: 260px;
-  height: 260px;
-}
-
-.hidden {
-  display: none !important;
-}
-
-/* ===============================
-   NAVIGATION (AR PAGE)
-   =============================== */
-body:has(#camera) {
-  background: black;
-}
-
-body:has(#camera)::after {
-  display: none;
-}
-
-/* Camera */
+/* NAVIGATION */
 #camera {
   position: fixed;
   inset: 0;
@@ -168,73 +56,42 @@ body:has(#camera)::after {
   z-index: -2;
 }
 
-/* UI Overlay */
 .nav-ui-overlay {
   position: fixed;
   top: 12px;
   left: 12px;
   right: 12px;
   z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  pointer-events: none;
 }
 
-/* Back Button */
-.back-btn-nav {
-  pointer-events: auto;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 10px 16px;
-  border-radius: 12px;
-  font-weight: 600;
-}
-
-/* Instruction Card */
 .nav-card {
-  pointer-events: auto;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(8px);
-  padding: 16px 18px;
+  background: rgba(0,0,0,0.65);
+  padding: 16px;
   border-radius: 16px;
 }
 
-/* Instruction Text */
 #instruction {
   font-size: 1.5rem;
   font-weight: 800;
 }
 
 #distance {
-  font-size: 1.1rem;
   margin-top: 6px;
-  opacity: 0.9;
 }
 
-/* Three.js Canvas */
-canvas {
-  touch-action: none;
-  z-index: 1;
-}
-
-/* ===============================
-   MINIMAP
-================================ */
+/* MINIMAP */
 .minimap {
   position: fixed;
   top: 16px;
   right: 16px;
   width: 160px;
   height: 160px;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0,0,0,0.65);
   border-radius: 14px;
   z-index: 999;
-  pointer-events: none;
 }
 
-/* ===============================
-   DESTINATION SCAN BUTTON
-================================ */
+/* DESTINATION BUTTON */
 .scan-dest-btn {
   position: fixed;
   bottom: 24px;
@@ -244,76 +101,35 @@ canvas {
   max-width: 360px;
   padding: 16px;
   border-radius: 16px;
-  font-size: 1rem;
   font-weight: 700;
-  color: white;
   background: linear-gradient(135deg, #00ff88, #00cc66);
-  box-shadow: 0 10px 24px rgba(0, 204, 102, 0.4);
   z-index: 1000;
 }
 
-/* ===============================
-   DESTINATION QR SCAN OVERLAY
-================================ */
-.scan-overlay {
+/* PROTOTYPE BADGE */
+.prototype-badge {
   position: fixed;
-  inset: 0;
-  background: black;
-  z-index: 3000;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.scan-overlay.hidden {
-  display: none;
-}
-
-#dest-qr-reader {
-  width: 260px;
-  height: 260px;
-}
-
-.close-scan {
-  margin-top: 20px;
-  padding: 14px 20px;
+  top: 14px;
+  right: 14px;
+  padding: 6px 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(0,0,0,0.6);
   border-radius: 12px;
-  border: none;
-  background: #ff5555;
-  color: white;
-  font-weight: 700;
-}
-
-/* ===============================
-   END SCREEN
-================================ */
-.end-screen {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
   z-index: 2000;
 }
 
-.end-screen.hidden {
-  display: none;
+/* HOW IT WORKS MODAL */
+#aboutModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 4000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.end-card {
-  background: rgba(255, 255, 255, 0.08);
-  padding: 32px;
-  border-radius: 20px;
-  text-align: center;
-  width: 85%;
-  max-width: 320px;
-}
-
-.checkmark {
-  font-size: 3rem;
-  color: #00ff88;
-  margin-bottom: 16px;
+.hidden {
+  display: none !important;
 }
