@@ -67,8 +67,6 @@ scene.add(camera);
    DEVICE ORIENTATION (YAW)
 ================================ */
 let yaw = 0;
-let lastAlpha = null;
-
 if (
   typeof DeviceOrientationEvent !== "undefined" &&
   typeof DeviceOrientationEvent.requestPermission === "function"
@@ -79,14 +77,8 @@ if (
 window.addEventListener("deviceorientation", e => {
   if (e.alpha === null) return;
 
-  if (lastAlpha !== null) {
-    let delta = e.alpha - lastAlpha;
-    if (delta > 180) delta -= 360;
-    if (delta < -180) delta += 360;
-    yaw += delta * 0.015;
-  }
-
-  lastAlpha = e.alpha;
+  // Absolute heading (degrees → radians)
+  yaw = -THREE.MathUtils.degToRad(e.alpha);
 });
 
 /* ===============================
