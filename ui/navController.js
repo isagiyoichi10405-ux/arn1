@@ -112,8 +112,8 @@ if (anchor) {
 }
 
 const map = document.createElement("canvas");
-map.width = 150;
-map.height = 150;
+map.width = 160;
+map.height = 160;
 map.style.position = "fixed";
 map.style.top = "16px";
 map.style.right = "16px";
@@ -138,8 +138,16 @@ function drawUserArrow(x, y, a) {
   ctx.restore();
 }
 
+function drawBlockLabel(text, x, y) {
+  ctx.font = "10px system-ui";
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, x + 6, y - 6);
+}
+
 function drawMiniMap() {
-  ctx.clearRect(0, 0, 150, 150);
+  ctx.clearRect(0, 0, 160, 160);
 
   const nodes = path.map(id => campusCoords[id]);
   const xs = nodes.map(n => n.x);
@@ -148,8 +156,8 @@ function drawMiniMap() {
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minZ = Math.min(...zs), maxZ = Math.max(...zs);
 
-  const sx = x => ((x - minX) / (maxX - minX)) * 110 + 20;
-  const sz = z => ((z - minZ) / (maxZ - minZ)) * 110 + 20;
+  const sx = x => ((x - minX) / (maxX - minX)) * 120 + 20;
+  const sz = z => ((z - minZ) / (maxZ - minZ)) * 120 + 20;
 
   ctx.strokeStyle = "#00c6ff";
   ctx.lineWidth = 2;
@@ -159,6 +167,19 @@ function drawMiniMap() {
     i === 0 ? ctx.moveTo(sx(p.x), sz(p.z)) : ctx.lineTo(sx(p.x), sz(p.z));
   });
   ctx.stroke();
+
+  path.forEach(id => {
+    const p = campusCoords[id];
+    const x = sx(p.x);
+    const y = sz(p.z);
+
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    drawBlockLabel(id, x, y);
+  });
 
   const c = campusCoords[current];
   const cx = sx(c.x);
@@ -174,6 +195,7 @@ function drawMiniMap() {
 
 function animate() {
   requestAnimationFrame(animate);
+
   camera.rotation.set(0, yaw, 0);
 
   const next = path[index + 1];
@@ -193,11 +215,10 @@ import("https://unpkg.com/html5-qrcode").then(() => {
     { fps: 5, qrbox: 200 },
     qrText => {
       let data;
-
       try {
         data = JSON.parse(qrText);
       } catch {
-        data = { id: qrText };
+        data = { id: qrText.trim() };
       }
 
       sessionStorage.setItem("qrAnchor", JSON.stringify(data));
