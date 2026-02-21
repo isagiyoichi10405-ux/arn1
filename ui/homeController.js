@@ -2,14 +2,8 @@ import { aStarShortestPath } from "../core/graph.js";
 import { campusCoords, campusGraph } from "../data/campusMap.js";
 import { setRoute } from "../state/navigationStore.js";
 
-/* -------------------------------
-   Helpers
---------------------------------*/
 const normalize = s => s.replace(/\s+/g, "_").toUpperCase();
 
-/* -------------------------------
-   UI REFERENCES
---------------------------------*/
 const locText = document.getElementById("locText");
 const startBtn = document.getElementById("startBtn");
 
@@ -23,48 +17,41 @@ function showApp() {
   appUI.classList.add("active");
 }
 
-/* -------------------------------
-   SOURCE + HEADING
---------------------------------*/
 let source = null;
-let heading = null;
 
-/* -------------------------------
-   QR SCANNING
---------------------------------*/
 if (startScanBtn) {
   const scanner = new Html5Qrcode("qr-reader");
 
   startScanBtn.onclick = async () => {
     try {
       qrStatus.innerText = "Scanning...";
+
       await scanner.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
         qrText => {
           let data;
+
           try {
             data = JSON.parse(qrText);
           } catch {
-            alert("Invalid QR code");
-            return;
+            data = { id: qrText.trim() };
           }
 
           source = normalize(data.id);
-          heading = data.heading;
 
           if (!campusCoords[source]) {
-            alert("Unknown location in QR");
+            alert("Unknown block");
             return;
           }
 
           sessionStorage.setItem(
             "qrAnchor",
-            JSON.stringify({ id: source, heading })
+            JSON.stringify({ id: source })
           );
 
           locText.innerText = source;
-          qrStatus.innerText = `Anchored at ${source}`;
+          qrStatus.innerText = `Location detected: ${source}`;
 
           scanner.stop();
           showApp();
@@ -77,9 +64,6 @@ if (startScanBtn) {
   };
 }
 
-/* -------------------------------
-   START NAVIGATION
---------------------------------*/
 startBtn.onclick = () => {
   if (!source) {
     alert("Scan location QR first");
