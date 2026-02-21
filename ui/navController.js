@@ -127,7 +127,9 @@ function showArrival() {
   arrived = true;
   arrow.visible = false;
   endScreen.classList.remove("hidden");
+  scanBtn.remove();
 }
+
 
 /* ===============================
    QR LOCATION UPDATE
@@ -240,22 +242,39 @@ animate();
 /* ===============================
    QR SCANNER
 ================================ */
+let qrScanner;
+
 import("https://unpkg.com/html5-qrcode").then(() => {
-  const qrScanner = new Html5Qrcode("qr-reader");
+  qrScanner = new Html5Qrcode("qr-reader");
 
-  qrScanner.start(
-    { facingMode: "environment" },
-    { fps: 5, qrbox: 200 },
-    qrText => {
-      let data;
-      try {
-        data = JSON.parse(qrText);
-      } catch {
-        data = { id: qrText.trim() };
+  scanBtn.onclick = () => {
+    scanBtn.innerText = "Scanning...";
+    scanBtn.disabled = true;
+
+    qrScanner.start(
+      { facingMode: "environment" },
+      { fps: 5, qrbox: 220 },
+      qrText => {
+        let data;
+        try {
+          data = JSON.parse(qrText);
+        } catch {
+          data = { id: qrText.trim() };
+        }
+
+        sessionStorage.setItem("qrAnchor", JSON.stringify(data));
+        applyQRAnchor(data);
+
+        qrScanner.stop();
+        scanBtn.remove();
       }
-
-      sessionStorage.setItem("qrAnchor", JSON.stringify(data));
-      applyQRAnchor(data);
-    }
-  );
+    );
+  };
 });
+/* ===============================
+   DESTINATION QR SCAN BUTTON
+================================ */
+const scanBtn = document.createElement("button");
+scanBtn.className = "scan-dest-btn";
+scanBtn.innerText = "Scan Destination QR";
+document.body.appendChild(scanBtn);
