@@ -22,6 +22,7 @@ if (!navState || !navState.path) {
 const path = navState.path;
 let index = 0;
 let current = path[index];
+let arrived = false;
 
 /* ===============================
    UI ELEMENTS
@@ -33,7 +34,7 @@ instruction.innerText = `Destination: ${path.at(-1)}`;
 distance.innerText = `${path.length - 1} steps`;
 
 /* ===============================
-   THREE.JS SCENE
+   THREE.JS SETUP
 ================================ */
 const scene = new THREE.Scene();
 
@@ -64,20 +65,12 @@ camera.add(arrow);
 scene.add(camera);
 
 /* ===============================
-   DEVICE ORIENTATION (YAW)
+   DEVICE ORIENTATION
 ================================ */
 let yaw = 0;
-if (
-  typeof DeviceOrientationEvent !== "undefined" &&
-  typeof DeviceOrientationEvent.requestPermission === "function"
-) {
-  DeviceOrientationEvent.requestPermission().catch(() => {});
-}
 
 window.addEventListener("deviceorientation", e => {
   if (e.alpha === null) return;
-
-  // Absolute heading (degrees → radians)
   yaw = -THREE.MathUtils.degToRad(e.alpha);
 });
 
@@ -96,7 +89,7 @@ function updateInstruction() {
   const next = path[index + 1];
 
   if (!prev || !next) {
-    instruction.innerText = "You have arrived";
+    instruction.innerText = "Scan destination QR to confirm arrival";
     return;
   }
 
@@ -108,7 +101,36 @@ function updateInstruction() {
 }
 
 /* ===============================
-   QR-BASED LOCATION UPDATE
+   END SCREEN UX
+================================ */
+const endScreen = document.createElement("div");
+endScreen.className = "end-screen hidden";
+endScreen.innerHTML = `
+  <div class="end-card">
+    <div class="checkmark">✔</div>
+    <h2>You're Here</h2>
+    <p>Destination confirmed successfully.</p>
+    <button id="endNavBtn">End Navigation</button>
+  </div>
+`;
+document.body.appendChild(endScreen);
+
+document.addEventListener("click", e => {
+  if (e.target.id === "endNavBtn") {
+    sessionStorage.removeItem("navState");
+    sessionStorage.removeItem("qrAnchor");
+    location.href = "index.html";
+  }
+});
+
+function showArrival() {
+  arrived = true;
+  arrow.visible = false;
+  endScreen.classList.remove("hidden");
+}
+
+/* ===============================
+   QR LOCATION UPDATE
 ================================ */
 function applyQRAnchor(anchor) {
   if (!anchor || !anchor.id) return;
@@ -119,12 +141,20 @@ function applyQRAnchor(anchor) {
   index = idx;
   current = path[index];
 
+  // FINAL DESTINATION CONFIRMATION
+  if (anchor.id === path.at(-1)) {
+    instruction.innerText = "Destination reached";
+    distance.innerText = "0 steps";
+    showArrival();
+    return;
+  }
+
   updateInstruction();
   distance.innerText = `${path.length - index - 1} steps`;
 }
 
 /* ===============================
-   RESTORE LAST QR
+   RESTORE PREVIOUS QR
 ================================ */
 const savedAnchor = JSON.parse(sessionStorage.getItem("qrAnchor"));
 if (savedAnchor) applyQRAnchor(savedAnchor);
@@ -135,12 +165,7 @@ if (savedAnchor) applyQRAnchor(savedAnchor);
 const map = document.createElement("canvas");
 map.width = 160;
 map.height = 160;
-map.style.position = "fixed";
-map.style.top = "16px";
-map.style.right = "16px";
-map.style.background = "rgba(0,0,0,0.65)";
-map.style.borderRadius = "14px";
-map.style.zIndex = 999;
+map.className = "minimap";
 document.body.appendChild(map);
 
 const ctx = map.getContext("2d");
@@ -148,7 +173,7 @@ const ctx = map.getContext("2d");
 function drawUserArrow(x, y, a) {
   ctx.save();
   ctx.translate(x, y);
-  ctx.rotate(-a); // FIXED: mirror rotation
+  ctx.rotate(-a);
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
   ctx.moveTo(0, -10);
@@ -181,24 +206,16 @@ function drawMiniMap() {
   });
   ctx.stroke();
 
-  path.forEach(id => {
+  path.forEach((id, i) => {
     const p = campusCoords[id];
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.fillStyle = i <= index ? "#00ff88" : "rgba(255,255,255,0.7)";
     ctx.beginPath();
-    ctx.arc(sx(p.x), sz(p.z), 3, 0, Math.PI * 2);
+    ctx.arc(sx(p.x), sz(p.z), 4, 0, Math.PI * 2);
     ctx.fill();
   });
 
   const c = campusCoords[current];
-  const cx = sx(c.x);
-  const cy = sz(c.z);
-
-  ctx.fillStyle = "#00ff00";
-  ctx.beginPath();
-  ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-  ctx.fill();
-
-  drawUserArrow(cx, cy, yaw);
+  drawUserArrow(sx(c.x), sz(c.z), yaw);
 }
 
 /* ===============================
@@ -209,9 +226,9 @@ function animate() {
 
   camera.rotation.set(0, yaw, 0);
 
-  const next = path[index + 1];
-  if (next) {
-    arrow.rotation.z = angle(current, next) - yaw;
+  if (!arrived) {
+    const next = path[index + 1];
+    if (next) arrow.rotation.z = angle(current, next) - yaw;
   }
 
   drawMiniMap();
@@ -221,7 +238,7 @@ function animate() {
 animate();
 
 /* ===============================
-   QR SCANNER (RE-ANCHORING)
+   QR SCANNER
 ================================ */
 import("https://unpkg.com/html5-qrcode").then(() => {
   const qrScanner = new Html5Qrcode("qr-reader");

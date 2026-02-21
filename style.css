@@ -223,3 +223,45 @@ body:has(#camera)::after {
 canvas {
   touch-action: none;
 }
+/* ===============================
+   END SCREEN
+================================ */
+
+.end-screen {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.end-screen.hidden {
+  display: none;
+}
+
+.end-card {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 32px;
+  border-radius: 20px;
+  text-align: center;
+  width: 85%;
+  max-width: 320px;
+}
+
+.checkmark {
+  font-size: 3rem;
+  color: #00ff88;
+  margin-bottom: 16px;
+}
+
+.end-card h2 {
+  margin-bottom: 10px;
+}
+
+.end-card p {
+  margin-bottom: 20px;
+  opacity: 0.85;
+}
