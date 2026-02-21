@@ -43,7 +43,6 @@ distance.innerText = `${path.length - 1} steps`;
    THREE.JS SETUP
 ================================ */
 const scene = new THREE.Scene();
-
 const camera = new THREE.PerspectiveCamera(
   70,
   innerWidth / innerHeight,
@@ -129,10 +128,12 @@ document.body.appendChild(map);
 
 const ctx = map.getContext("2d");
 
+/* ===============================
+   MINIMAP HELPERS
+================================ */
 function drawUserArrow(x, y, a) {
   ctx.save();
   ctx.translate(x, y);
-  ctx.scale(1, -1);
   ctx.rotate(a);
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
@@ -146,16 +147,16 @@ function drawUserArrow(x, y, a) {
 
 function drawLabel(text, x, y, color = "#ffffff") {
   ctx.save();
-  ctx.scale(1, -1);
   ctx.fillStyle = color;
   ctx.font = "10px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText(text, x, -y - 6);
+  ctx.textBaseline = "top";
+  ctx.fillText(text, x, y + 6);
   ctx.restore();
 }
 
 /* ===============================
-   DRAW MINIMAP (WITH LABELS)
+   DRAW MINIMAP (CORRECT VERSION)
 ================================ */
 function drawMiniMap() {
   ctx.clearRect(0, 0, 160, 160);
@@ -170,21 +171,24 @@ function drawMiniMap() {
   const sx = x => ((x - minX) / (maxX - minX)) * 120 + 20;
   const sz = z => ((z - minZ) / (maxZ - minZ)) * 120 + 20;
 
-  /* PATH */
+  /* ---- PATH + NODES (INVERTED Y) ---- */
   ctx.save();
+  ctx.translate(0, 160);
   ctx.scale(1, -1);
+
+  // Path
   ctx.strokeStyle = "#00c6ff";
   ctx.lineWidth = 2;
   ctx.beginPath();
   path.forEach((id, i) => {
     const p = campusCoords[id];
     i === 0
-      ? ctx.moveTo(sx(p.x), -sz(p.z))
-      : ctx.lineTo(sx(p.x), -sz(p.z));
+      ? ctx.moveTo(sx(p.x), sz(p.z))
+      : ctx.lineTo(sx(p.x), sz(p.z));
   });
   ctx.stroke();
 
-  /* NODES */
+  // Nodes
   path.forEach((id, i) => {
     const p = campusCoords[id];
     let color = "rgba(255,255,255,0.7)";
@@ -195,15 +199,17 @@ function drawMiniMap() {
 
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(sx(p.x), -sz(p.z), 4, 0, Math.PI * 2);
+    ctx.arc(sx(p.x), sz(p.z), 4, 0, Math.PI * 2);
     ctx.fill();
   });
 
   ctx.restore();
 
-  /* LABELS (CHECKPOINTS ONLY) */
+  /* ---- LABELS (NORMAL CANVAS SPACE) ---- */
   path.forEach((id, i) => {
     const p = campusCoords[id];
+    const x = sx(p.x);
+    const y = 160 - sz(p.z);
 
     if (
       i === 0 ||
@@ -217,13 +223,13 @@ function drawMiniMap() {
       if (i === 0) label = "START";
       else if (i === path.length - 1) label = "END";
 
-      drawLabel(label, sx(p.x), sz(p.z));
+      drawLabel(label, x, y);
     }
   });
 
-  /* USER ARROW */
+  /* ---- USER ORIENTATION ---- */
   const c = campusCoords[current];
-  drawUserArrow(sx(c.x), sz(c.z), yaw);
+  drawUserArrow(sx(c.x), 160 - sz(c.z), yaw);
 }
 
 /* ===============================
