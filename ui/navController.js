@@ -1,30 +1,40 @@
 import * as THREE from "three";
 import { campusCoords } from "../data/campusMap.js";
 
+/* ===============================
+   CAMERA FEED
+================================ */
 navigator.mediaDevices.getUserMedia({
   video: { facingMode: "environment" }
 }).then(stream => {
   document.getElementById("camera").srcObject = stream;
 });
 
-const saved = JSON.parse(sessionStorage.getItem("navState"));
-if (!saved || !saved.path) {
+/* ===============================
+   LOAD NAV STATE
+================================ */
+const navState = JSON.parse(sessionStorage.getItem("navState"));
+if (!navState || !navState.path) {
   alert("No route data");
   location.href = "index.html";
 }
 
-const path = saved.path;
+const path = navState.path;
 let index = 0;
 let current = path[index];
 
-const anchor = JSON.parse(sessionStorage.getItem("qrAnchor"));
-
+/* ===============================
+   UI ELEMENTS
+================================ */
 const instruction = document.getElementById("instruction");
 const distance = document.getElementById("distance");
 
 instruction.innerText = `Destination: ${path.at(-1)}`;
 distance.innerText = `${path.length - 1} steps`;
 
+/* ===============================
+   THREE.JS SCENE
+================================ */
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
@@ -38,6 +48,9 @@ const renderer = new THREE.WebGLRenderer({ alpha: true });
 renderer.setSize(innerWidth, innerHeight);
 document.getElementById("canvas-container").appendChild(renderer.domElement);
 
+/* ===============================
+   AR ARROW
+================================ */
 const arrow = new THREE.Mesh(
   new THREE.ConeGeometry(0.25, 0.9, 20),
   new THREE.MeshBasicMaterial({ color: 0x00ff00 })
@@ -50,6 +63,9 @@ arrow.frustumCulled = false;
 camera.add(arrow);
 scene.add(camera);
 
+/* ===============================
+   DEVICE ORIENTATION (YAW)
+================================ */
 let yaw = 0;
 let lastAlpha = null;
 
@@ -69,9 +85,13 @@ window.addEventListener("deviceorientation", e => {
     if (delta < -180) delta += 360;
     yaw += delta * 0.015;
   }
+
   lastAlpha = e.alpha;
 });
 
+/* ===============================
+   NAVIGATION MATH
+================================ */
 function angle(a, b) {
   const p1 = campusCoords[a];
   const p2 = campusCoords[b];
@@ -88,16 +108,20 @@ function updateInstruction() {
     return;
   }
 
-  const d = angle(curr, next) - angle(prev, curr);
-  if (d > 0.4) instruction.innerText = "Turn left";
-  else if (d < -0.4) instruction.innerText = "Turn right";
+  const delta = angle(curr, next) - angle(prev, curr);
+
+  if (delta > 0.4) instruction.innerText = "Turn left";
+  else if (delta < -0.4) instruction.innerText = "Turn right";
   else instruction.innerText = "Go straight";
 }
 
-function applyQRAnchor(a) {
-  if (!a || !a.id) return;
+/* ===============================
+   QR-BASED LOCATION UPDATE
+================================ */
+function applyQRAnchor(anchor) {
+  if (!anchor || !anchor.id) return;
 
-  const idx = path.indexOf(a.id);
+  const idx = path.indexOf(anchor.id);
   if (idx === -1) return;
 
   index = idx;
@@ -107,10 +131,15 @@ function applyQRAnchor(a) {
   distance.innerText = `${path.length - index - 1} steps`;
 }
 
-if (anchor) {
-  applyQRAnchor(anchor);
-}
+/* ===============================
+   RESTORE LAST QR
+================================ */
+const savedAnchor = JSON.parse(sessionStorage.getItem("qrAnchor"));
+if (savedAnchor) applyQRAnchor(savedAnchor);
 
+/* ===============================
+   MINIMAP
+================================ */
 const map = document.createElement("canvas");
 map.width = 160;
 map.height = 160;
@@ -127,7 +156,7 @@ const ctx = map.getContext("2d");
 function drawUserArrow(x, y, a) {
   ctx.save();
   ctx.translate(x, y);
-  ctx.rotate(a);
+  ctx.rotate(-a); // FIXED: mirror rotation
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
   ctx.moveTo(0, -10);
@@ -136,14 +165,6 @@ function drawUserArrow(x, y, a) {
   ctx.closePath();
   ctx.fill();
   ctx.restore();
-}
-
-function drawBlockLabel(text, x, y) {
-  ctx.font = "10px system-ui";
-  ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, x + 6, y - 6);
 }
 
 function drawMiniMap() {
@@ -170,15 +191,10 @@ function drawMiniMap() {
 
   path.forEach(id => {
     const p = campusCoords[id];
-    const x = sx(p.x);
-    const y = sz(p.z);
-
     ctx.fillStyle = "rgba(255,255,255,0.7)";
     ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.arc(sx(p.x), sz(p.z), 3, 0, Math.PI * 2);
     ctx.fill();
-
-    drawBlockLabel(id, x, y);
   });
 
   const c = campusCoords[current];
@@ -193,13 +209,18 @@ function drawMiniMap() {
   drawUserArrow(cx, cy, yaw);
 }
 
+/* ===============================
+   RENDER LOOP
+================================ */
 function animate() {
   requestAnimationFrame(animate);
 
   camera.rotation.set(0, yaw, 0);
 
   const next = path[index + 1];
-  if (next) arrow.rotation.z = angle(current, next);
+  if (next) {
+    arrow.rotation.z = angle(current, next) - yaw;
+  }
 
   drawMiniMap();
   renderer.render(scene, camera);
@@ -207,6 +228,9 @@ function animate() {
 
 animate();
 
+/* ===============================
+   QR SCANNER (RE-ANCHORING)
+================================ */
 import("https://unpkg.com/html5-qrcode").then(() => {
   const qrScanner = new Html5Qrcode("qr-reader");
 
