@@ -21,10 +21,15 @@ arSource.init(() => resize());
 window.addEventListener('resize', resize);
 
 function resize() {
-  arSource.onResize();
-  arSource.copySizeTo(renderer.domElement);
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  renderer.setSize(width, height);
+  arSource.onResizeElement();
+  arSource.copyElementSizeTo(renderer.domElement);
+
   if (arContext.arController) {
-    arSource.copySizeTo(arContext.arController.canvas);
+    arSource.copyElementSizeTo(arContext.arController.canvas);
   }
 }
 

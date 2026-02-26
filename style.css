@@ -6,11 +6,34 @@
 }
 
 body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
   height: 100vh;
-  font-family: system-ui, Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   overflow: hidden;
-  background-color: #152f41;
+  background-color: #000;
   color: white;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure AR.js elements (video/canvas) fill the screen */
+video,
+canvas {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+canvas {
+  z-index: -1;
+}
+
+video {
+  z-index: -2;
 }
 
 /* HOME UI */
@@ -65,7 +88,7 @@ button {
 }
 
 .nav-card {
-  background: rgba(0,0,0,0.65);
+  background: rgba(0, 0, 0, 0.65);
   padding: 16px;
   border-radius: 16px;
 }
@@ -86,7 +109,7 @@ button {
   right: 16px;
   width: 160px;
   height: 160px;
-  background: rgba(0,0,0,0.65);
+  background: rgba(0, 0, 0, 0.65);
   border-radius: 14px;
   z-index: 999;
 }
@@ -114,7 +137,7 @@ button {
   padding: 6px 12px;
   font-size: 0.7rem;
   font-weight: 600;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 12px;
   z-index: 2000;
 }
@@ -123,7 +146,7 @@ button {
 #aboutModal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
   z-index: 4000;
   display: flex;
   justify-content: center;
