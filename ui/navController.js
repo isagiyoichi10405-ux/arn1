@@ -36,8 +36,8 @@ let arrived = false;
 const instruction = document.getElementById("instruction");
 const distance = document.getElementById("distance");
 
-instruction.innerText = `Destination: ${path.at(-1)}`;
-distance.innerText = `${path.length - 1} steps`;
+instruction.innerText = `To: ${path.at(-1)}`;
+distance.innerText = `${path.length - 1} steps remaining`;
 
 /* ===============================
    THREE.JS SETUP
@@ -117,11 +117,11 @@ function updateInstruction() {
   const dist = approxDistance(curr, next);
 
   if (delta > 0.4)
-    instruction.innerText = `Turn left • ${dist} m`;
+    instruction.innerText = `Turn Left • ${dist}m`;
   else if (delta < -0.4)
-    instruction.innerText = `Turn right • ${dist} m`;
+    instruction.innerText = `Turn Right • ${dist}m`;
   else
-    instruction.innerText = `Go straight • ${dist} m`;
+    instruction.innerText = `Go Straight • ${dist}m`;
 }
 
 /* ===============================

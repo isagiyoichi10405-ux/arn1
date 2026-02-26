@@ -14,6 +14,7 @@ const startScanBtn = document.getElementById("startScanBtn");
 
 function showApp() {
   qrOverlay.classList.add("hidden");
+  appUI.classList.remove("hidden");
   appUI.classList.add("active");
 }
 
@@ -24,11 +25,12 @@ if (startScanBtn) {
 
   startScanBtn.onclick = async () => {
     try {
-      qrStatus.innerText = "Scanning...";
+      startScanBtn.classList.add("hidden");
+      qrStatus.innerText = "Align QR code with camera";
 
       await scanner.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
+        { fps: 15, qrbox: 250 },
         qrText => {
           let data;
 
@@ -41,7 +43,7 @@ if (startScanBtn) {
           source = normalize(data.id);
 
           if (!campusCoords[source]) {
-            alert("Unknown block");
+            qrStatus.innerText = `Unknown Building: ${source}`;
             return;
           }
 
@@ -50,31 +52,31 @@ if (startScanBtn) {
             JSON.stringify({ id: source })
           );
 
-          locText.innerText = source;
-          qrStatus.innerText = `Location detected: ${source}`;
+          locText.value = source;
+          qrStatus.innerText = `Matched: ${source}`;
 
-          scanner.stop();
-          showApp();
+          scanner.stop().then(showApp);
         }
       );
     } catch (err) {
       console.error(err);
-      qrStatus.innerText = "Camera error";
+      qrStatus.innerText = "Camera access required";
+      startScanBtn.classList.remove("hidden");
     }
   };
 }
 
 startBtn.onclick = () => {
-  if (!source) {
-    alert("Scan location QR first");
-    return;
-  }
-
   const destInput = document.getElementById("destinationInput").value;
   const destination = normalize(destInput);
 
-  if (!campusCoords[destination]) {
-    alert("Invalid destination");
+  if (!source) {
+    alert("Please scan a starting QR first");
+    return;
+  }
+
+  if (!destination || !campusCoords[destination]) {
+    alert("Please enter a valid destination (e.g. ADMIN_BLOCK)");
     return;
   }
 
@@ -86,7 +88,7 @@ startBtn.onclick = () => {
   );
 
   if (!path) {
-    alert("No route found");
+    alert("No path found between these locations");
     return;
   }
 

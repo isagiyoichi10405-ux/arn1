@@ -9,27 +9,26 @@
 </head>
 
 <body>
-
-  <!-- Camera -->
+  <!-- Camera Feed Viewport -->
   <video id="camera" autoplay playsinline></video>
+  <div id="canvas-container"></div>
 
-  <!-- UI Overlay -->
+  <!-- Navigation Overlays -->
+  <button class="back-btn-nav" onclick="location.href='index.html'" aria-label="Go Back">
+    ←
+  </button>
+
   <div class="nav-ui-overlay">
-    <button class="back-btn-nav" onclick="location.href='index.html'">← Back</button>
-
     <div class="nav-card">
-      <div id="instruction">Loading...</div>
-      <div id="distance"></div>
+      <div id="instruction">Establishing Link...</div>
+      <div id="distance">-- m</div>
     </div>
   </div>
 
-  <!-- Prototype Disclaimer -->
-  <div class="prototype-badge">
-    Prototype Mode • AR directions based on map & sensors
+  <div class="prototype-badge"
+    style="bottom: 24px; left: 24px; top: auto; right: auto; background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: 1px solid var(--glass-border);">
+    AR Nav Active
   </div>
-
-  <!-- Three.js Canvas -->
-  <div id="canvas-container"></div>
 
   <script type="importmap">
     {
