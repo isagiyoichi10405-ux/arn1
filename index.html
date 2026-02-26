@@ -1,55 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AR Connect</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <meta charset="UTF-8" />
+  <title>Campus AR Navigation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- THREE -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- AR.JS -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/three.js/build/ar-threex.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-
-<div id="qr-overlay">
-  <h2>Scan Location QR</h2>
-  <button id="startScanBtn">Start Scan</button>
-  <div id="qr-reader"></div>
-  <p id="qr-status">Waiting for scan...</p>
-</div>
-
-<div class="main-container" id="app">
-  <h1>📍 AR Connect</h1>
-  <p>Scan • Search • Navigate</p>
-
-  <input id="destinationInput" type="text" placeholder="Enter Block">
-
-  <small style="opacity:0.7">
-    Tip: Use block codes like B1, B2, ADMIN BLOCK
-  </small>
-
-  <p>📍 Current Location: <span id="locText">Not scanned</span></p>
-
-  <button id="startBtn">Start Navigation</button>
-  <button onclick="document.getElementById('aboutModal').classList.remove('hidden')">
-    ℹ️ How it works
-  </button>
-</div>
-
-<div id="aboutModal" class="hidden">
-  <div class="main-container">
-    <h2>How AR Connect Works</h2>
-    <ul style="text-align:left; font-size:0.9rem;">
-      <li>QR codes define physical locations</li>
-      <li>Shortest path computed using A* algorithm</li>
-      <li>AR arrow overlays direction using device sensors</li>
-      <li>Minimap provides spatial awareness</li>
-      <li>This is a prototype system</li>
-    </ul>
-    <button onclick="document.getElementById('aboutModal').classList.add('hidden')">
-      Close
-    </button>
+  <div style="position:fixed;bottom:15px;width:100%;text-align:center;color:white;">
+    Scan the campus QR code
   </div>
-</div>
 
-<script type="module" src="main.js"></script>
+  <script type="module" src="main.js"></script>
 </body>
 </html>

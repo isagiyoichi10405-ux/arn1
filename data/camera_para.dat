@@ -1,0 +1,10 @@
+# Camera parameters for AR.js
+# source: ARToolKit
+
+640 480
+
+700.0 0.0 320.0
+0.0 700.0 240.0
+0.0 0.0 1.0
+
+0.0 0.0 0.0 0.0
