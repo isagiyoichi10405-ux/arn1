@@ -50,8 +50,11 @@ h3,
 }
 
 /* --- AR FOUNDATION --- */
-video,
-canvas {
+/* Target only the main AR video and the primary 3D canvas */
+#camera,
+#canvas-container canvas,
+#qr-reader video,
+#qr-reader canvas {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -60,12 +63,17 @@ canvas {
   object-fit: cover !important;
 }
 
-canvas {
+#canvas-container canvas {
   z-index: -1;
 }
 
-video {
+#camera {
   z-index: -2;
+}
+
+#qr-reader video,
+#qr-reader canvas {
+  z-index: 50;
 }
 
 /* --- GLASS CONTAINER (HOME) --- */
@@ -196,13 +204,15 @@ input:focus {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+  width: 120px !important;
+  height: 120px !important;
+  border-radius: 50% !important;
   border: 2px solid var(--glass-border);
   background: rgba(0, 0, 0, 0.7);
   overflow: hidden;
   z-index: 200;
+  /* Reset object-fit and position just in case */
+  object-fit: contain !important;
 }
 
 .back-btn-nav {
