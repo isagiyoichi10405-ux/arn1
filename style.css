@@ -215,6 +215,47 @@ input:focus {
   object-fit: contain !important;
 }
 
+/* --- NAV ACTION BUTTONS --- */
+.nav-action-btn {
+  position: fixed;
+  right: 24px;
+  width: 120px;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #000;
+  cursor: pointer;
+  z-index: 250;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.nav-action-btn:active {
+  transform: scale(0.95);
+}
+
+.btn-next {
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+}
+
+.btn-reset {
+  background: var(--glass-bg);
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
 .back-btn-nav {
   position: fixed;
   top: 24px;

@@ -270,19 +270,17 @@ function nextStep() {
    UI BUTTONS
 ================================ */
 const nextBtn = document.createElement("button");
-nextBtn.className = "scan-dest-btn";
-nextBtn.style.bottom = "140px";
-nextBtn.style.background = "linear-gradient(135deg, #00ff88, #00f2ff)";
-nextBtn.style.color = "#000";
+nextBtn.className = "nav-action-btn btn-next";
+nextBtn.style.bottom = "160px"; // Directly above 120px minimap
 nextBtn.innerText = "👣 Next Step";
 document.body.appendChild(nextBtn);
 
 nextBtn.onclick = nextStep;
 
 const rerouteBtn = document.createElement("button");
-rerouteBtn.className = "scan-dest-btn";
-rerouteBtn.style.bottom = "80px";
-rerouteBtn.innerText = "🔄 Reset Position";
+rerouteBtn.className = "nav-action-btn btn-reset";
+rerouteBtn.style.bottom = "220px"; // Above Next Step button
+rerouteBtn.innerText = "🔄 Reset";
 document.body.appendChild(rerouteBtn);
 
 rerouteBtn.onclick = () => {
