@@ -85,7 +85,7 @@ function createWorldPath() {
   const curve = new THREE.CatmullRomCurve3(points);
   const tubeGeo = new THREE.TubeGeometry(curve, path.length * 10, 0.08, 8, false);
   const tubeMat = new THREE.MeshBasicMaterial({
-    color: 0xff0000,
+    color: 0x00ff88,
     transparent: true,
     opacity: 0.8
   });
@@ -151,8 +151,8 @@ function updateInstruction(showWarning = false) {
     instruction.innerHTML = `<span style="color:#ff3333">POINTING WRONG DIRECTION</span>`;
   } else {
     const dist = approxDistance(current, next);
-    // Matching reference style: FROM [START] TO [END] | DIR: [DIRECTION]
     const dir = (dist < 2) ? "FORWARD" : "ADVANCE";
+    // Using CSS classes defined in style.css for consistent green theme
     instruction.innerHTML = `
       <div class="hud-main">FROM ${start} TO ${end}</div>
       <div class="hud-sub">DIR: ${dir} | NEXT: ${next} (${dist}m)</div>
