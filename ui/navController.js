@@ -285,9 +285,9 @@ function animate() {
     const relativeAngle = target - currentHeadingRad;
 
     // Arrow.rotation.z is the HUD rotation. 
-    // 0 = Up, Positive = Left (CCW in HUD space if using standard atan2)
-    // Actually, simple subtraction works if we align the axes.
-    arrow.rotation.z = -relativeAngle;
+    // We add Math.PI to flip the arrow around so it points AWAY from the user 
+    // towards the target destination in the HUD plane.
+    arrow.rotation.z = Math.PI - relativeAngle;
 
     const diff = Math.abs(target - currentHeadingRad);
     const normalizedDiff = Math.abs(((diff + Math.PI) % (Math.PI * 2)) - Math.PI);
