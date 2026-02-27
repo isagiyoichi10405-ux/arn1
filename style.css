@@ -219,24 +219,28 @@ input:focus {
 
 .nav-card {
   pointer-events: auto;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: transparent;
   padding: 24px;
   border-radius: var(--radius-md);
   animation: slideDown 0.5s ease;
+  text-align: center;
 }
 
 #instruction {
   font-family: 'Outfit', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 800;
   margin-bottom: 4px;
-  background: linear-gradient(to right, #fff, var(--text-dim));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ff0000;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.hud-sub {
+  font-size: 1rem;
+  color: #ff3333;
+  font-weight: 600;
 }
 
 /* --- PROGRESS BAR --- */
@@ -308,25 +312,21 @@ input:focus {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-.back-btn-nav {
+.vr-toggle {
   position: fixed;
-  top: 24px;
-  left: 24px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  bottom: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
   color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
   font-size: 1.2rem;
-  cursor: pointer;
-  z-index: 300;
+  text-transform: uppercase;
   pointer-events: auto;
-  padding: 0;
+  z-index: 500;
 }
 
 /* --- SCANNER OVERLAY --- */

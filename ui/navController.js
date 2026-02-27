@@ -71,24 +71,53 @@ window.addEventListener("resize", () => {
 });
 
 /* ===============================
-   AR POINTERS (TURN SYMBOLS)
+   3D WORLD ELEMENTS (WORLD AR)
 ================================ */
+const pathGroup = new THREE.Group();
+scene.add(pathGroup);
+
+function createWorldPath() {
+  pathGroup.clear();
+  const points = path.map(id => {
+    const coords = campusCoords[id];
+    return new THREE.Vector3(coords.x * 5, -1.6, coords.z * 5);
+  });
+
+  const curve = new THREE.CatmullRomCurve3(points);
+  const tubeGeo = new THREE.TubeGeometry(curve, path.length * 10, 0.08, 8, false);
+  const tubeMat = new THREE.MeshBasicMaterial({
+    color: 0xff0000,
+    transparent: true,
+    opacity: 0.8
+  });
+  const pathLine = new THREE.Mesh(tubeGeo, tubeMat);
+  pathGroup.add(pathLine);
+
+  // Add glowing nodes
+  points.forEach((p, i) => {
+    const nodeGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    const nodeMat = new THREE.MeshBasicMaterial({ color: i === index ? 0x00ff00 : 0xffffff });
+    const node = new THREE.Mesh(nodeGeo, nodeMat);
+    node.position.copy(p);
+    pathGroup.add(node);
+  });
+}
+
+createWorldPath();
+
 /* ===============================
-   3D MINIMAP OVERLAY (REPLACES ARROWS)
+   HUD MINIMAP (HELMET HUD)
 ================================ */
-const minimapPlaneGeo = new THREE.PlaneGeometry(0.8, 0.8);
+const minimapPlaneGeo = new THREE.PlaneGeometry(0.5, 0.5);
 const minimapTexture = new THREE.CanvasTexture(map);
 const minimapMaterial = new THREE.MeshBasicMaterial({
   map: minimapTexture,
   transparent: true,
-  opacity: 0.9,
+  opacity: 0.7,
   side: THREE.DoubleSide
 });
 const minimapMesh = new THREE.Mesh(minimapPlaneGeo, minimapMaterial);
-
-// Position it in front of the camera, slightly tilted
-minimapMesh.position.set(0, -0.4, -1.5);
-minimapMesh.rotation.x = -Math.PI / 6; // Tilt back slightly
+minimapMesh.position.set(0.6, -0.4, -1.2);
 camera.add(minimapMesh);
 scene.add(camera);
 
@@ -124,18 +153,25 @@ function approxDistance(a, b) {
 }
 
 function updateInstruction(showWarning = false) {
+  const start = path[0];
+  const end = path.at(-1);
   const next = path[index + 1];
 
   if (arrived || !next) {
-    instruction.innerText = "Scan destination QR to confirm arrival";
+    instruction.innerHTML = `<span style="color:var(--secondary)">DESTINATION REACHED</span>`;
     return;
   }
 
   if (showWarning) {
-    instruction.innerText = "Pointing Wrong Direction";
+    instruction.innerHTML = `<span style="color:#ff3333">POINTING WRONG DIRECTION</span>`;
   } else {
     const dist = approxDistance(current, next);
-    instruction.innerText = `${next} • ${dist}m`;
+    // Matching reference style: FROM [START] TO [END] | DIR: [DIRECTION]
+    const dir = (dist < 2) ? "FORWARD" : "ADVANCE";
+    instruction.innerHTML = `
+      <div class="hud-main">FROM ${start} TO ${end}</div>
+      <div class="hud-sub">DIR: ${dir} | NEXT: ${next} (${dist}m)</div>
+    `;
   }
 }
 
@@ -302,6 +338,7 @@ rerouteBtn.onclick = () => {
   distance.innerText = `${path.length - 1} steps remaining`;
   updateInstruction();
   updateProgressBar();
+  createWorldPath();
 };
 
 // Tap to advance on canvas
@@ -313,6 +350,9 @@ renderer.domElement.addEventListener("click", nextStep);
 function animate() {
   requestAnimationFrame(animate);
 
+  // World-Space Viewport Logic
+  const currentPos = campusCoords[current];
+  camera.position.set(currentPos.x * 5, 0, currentPos.z * 5);
   camera.rotation.set(0, yaw, 0);
 
   const next = path[index + 1];
@@ -321,9 +361,9 @@ function animate() {
     const p2 = campusCoords[next];
     const target = Math.atan2(p2.x - p1.x, p2.z - p1.z);
     const currentHeadingRad = THREE.MathUtils.degToRad(alphaHeading);
-    const relativeAngle = target - currentHeadingRad;
 
-    minimapMesh.rotation.z = -relativeAngle;
+    // Minimap HUD orientation (Helmet HUD style)
+    minimapMesh.rotation.z = -(target - currentHeadingRad);
 
     const diff = Math.abs(target - currentHeadingRad);
     const normalizedDiff = Math.abs(((diff + Math.PI) % (Math.PI * 2)) - Math.PI);
