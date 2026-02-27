@@ -35,9 +35,18 @@ let arrived = false;
 ================================ */
 const instruction = document.getElementById("instruction");
 const distance = document.getElementById("distance");
+const progressFill = document.getElementById("progress-fill");
+
+function updateProgressBar() {
+  if (progressFill) {
+    const progress = (index / (path.length - 1)) * 100;
+    progressFill.style.width = `${progress}%`;
+  }
+}
 
 instruction.innerText = `To: ${path.at(-1)}`;
 distance.innerText = `${path.length - 1} steps remaining`;
+updateProgressBar();
 
 /* ===============================
    THREE.JS SETUP
@@ -297,6 +306,7 @@ function nextStep() {
     current = path[index];
     distance.innerText = `${path.length - 1 - index} steps remaining`;
     updateInstruction();
+    updateProgressBar();
 
     if (index === path.length - 1) {
       arrived = true;
@@ -329,6 +339,7 @@ rerouteBtn.onclick = () => {
   wrongDirTimer = 0;
   distance.innerText = `${path.length - 1} steps remaining`;
   updateInstruction();
+  updateProgressBar();
 };
 
 // Tap to advance on canvas
@@ -384,6 +395,11 @@ function animate() {
       updateInstruction(false);
     }
   }
+
+  // Pulsing Effect for AR Arrows
+  const pulse = Math.sin(Date.now() * 0.005) * 0.25 + 0.75;
+  arrowMaterial.opacity = pulse;
+  arrowMaterial.transparent = true;
 
   drawMiniMap();
   renderer.render(scene, camera);

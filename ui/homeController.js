@@ -66,6 +66,18 @@ if (startScanBtn) {
   };
 }
 
+// Quick Destination Chips
+const destInput = document.getElementById("destinationInput");
+const chips = document.querySelectorAll(".chip");
+
+chips.forEach(chip => {
+  chip.onclick = () => {
+    destInput.value = chip.getAttribute("data-id");
+    chips.forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+  };
+});
+
 startBtn.onclick = () => {
   const destInput = document.getElementById("destinationInput").value;
   const destination = normalize(destInput);
