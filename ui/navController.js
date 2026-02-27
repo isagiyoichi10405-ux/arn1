@@ -250,20 +250,52 @@ function drawMiniMap() {
 }
 
 /* ===============================
-   REROUTE BUTTON
+   NAVIGATION PROGRESS
 ================================ */
+function nextStep() {
+  if (index < path.length - 1) {
+    index++;
+    current = path[index];
+    distance.innerText = `${path.length - 1 - index} steps remaining`;
+    updateInstruction();
+
+    if (index === path.length - 1) {
+      arrived = true;
+      instruction.innerText = "Scan destination QR to confirm arrival";
+    }
+  }
+}
+
+/* ===============================
+   UI BUTTONS
+================================ */
+const nextBtn = document.createElement("button");
+nextBtn.className = "scan-dest-btn";
+nextBtn.style.bottom = "140px";
+nextBtn.style.background = "linear-gradient(135deg, #00ff88, #00f2ff)";
+nextBtn.style.color = "#000";
+nextBtn.innerText = "👣 Next Step";
+document.body.appendChild(nextBtn);
+
+nextBtn.onclick = nextStep;
+
 const rerouteBtn = document.createElement("button");
 rerouteBtn.className = "scan-dest-btn";
 rerouteBtn.style.bottom = "80px";
-rerouteBtn.innerText = "🔄 Recalculate Route";
+rerouteBtn.innerText = "🔄 Reset Position";
 document.body.appendChild(rerouteBtn);
 
 rerouteBtn.onclick = () => {
   index = 0;
   current = path[0];
+  arrived = false;
   wrongDirTimer = 0;
+  distance.innerText = `${path.length - 1} steps remaining`;
   updateInstruction();
 };
+
+// Tap to advance on canvas
+renderer.domElement.addEventListener("click", nextStep);
 
 /* ===============================
    RENDER LOOP
