@@ -44,8 +44,7 @@ function updateProgressBar() {
   }
 }
 
-instruction.innerText = `To: ${path.at(-1)}`;
-distance.innerText = `${path.length - 1} steps remaining`;
+updateInstruction();
 updateProgressBar();
 
 /* ===============================
