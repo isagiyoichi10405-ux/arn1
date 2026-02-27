@@ -104,20 +104,6 @@ function createWorldPath() {
 
 createWorldPath();
 
-/* ===============================
-   HUD MINIMAP (HELMET HUD)
-================================ */
-const minimapPlaneGeo = new THREE.PlaneGeometry(0.5, 0.5);
-const minimapTexture = new THREE.CanvasTexture(map);
-const minimapMaterial = new THREE.MeshBasicMaterial({
-  map: minimapTexture,
-  transparent: true,
-  opacity: 0.7,
-  side: THREE.DoubleSide
-});
-const minimapMesh = new THREE.Mesh(minimapPlaneGeo, minimapMaterial);
-minimapMesh.position.set(0.6, -0.4, -1.2);
-camera.add(minimapMesh);
 scene.add(camera);
 
 /* ===============================
@@ -178,10 +164,10 @@ function updateInstruction(showWarning = false) {
    MINIMAP SETUP
 ================================ */
 const map = document.createElement("canvas");
-map.width = 300;
-map.height = 300;
+map.width = 150;
+map.height = 150;
 map.className = "minimap";
-document.body.appendChild(map);
+document.querySelector(".nav-card").appendChild(map);
 
 const ctx = map.getContext("2d");
 
@@ -228,12 +214,12 @@ function drawMiniMap() {
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minZ = Math.min(...zs), maxZ = Math.max(...zs);
 
-  const sx = x => ((x - minX) / (maxX - minX)) * 240 + 30;
-  const sz = z => ((z - minZ) / (maxZ - minZ)) * 240 + 30;
+  const sx = x => ((x - minX) / (maxX - minX)) * 90 + 30;
+  const sz = z => ((z - minZ) / (maxZ - minZ)) * 90 + 30;
 
   /* ---- PATH + NODES (INVERTED Y) ---- */
   ctx.save();
-  ctx.translate(0, 300);
+  ctx.translate(0, 150);
   ctx.scale(1, -1);
 
   // Path
@@ -311,23 +297,19 @@ function nextStep() {
 }
 
 /* ===============================
-   UI BUTTONS
+   UI BUTTONS (INTEGRATED INTO HUD)
 ================================ */
 const nextBtn = document.createElement("button");
-nextBtn.className = "nav-action-btn btn-next";
-nextBtn.style.bottom = "40px";
-nextBtn.style.right = "24px";
-nextBtn.innerText = "👣 Next Step";
-document.body.appendChild(nextBtn);
+nextBtn.className = "nav-action-btn btn-hud-next";
+nextBtn.innerHTML = "STEP FORWARD 👣";
+document.querySelector(".nav-card").appendChild(nextBtn);
 
 nextBtn.onclick = nextStep;
 
 const rerouteBtn = document.createElement("button");
-rerouteBtn.className = "nav-action-btn btn-reset";
-rerouteBtn.style.bottom = "40px";
-rerouteBtn.style.left = "24px";
+rerouteBtn.className = "btn-hud-reset";
 rerouteBtn.innerText = "🔄 Reset";
-document.body.appendChild(rerouteBtn);
+document.querySelector(".nav-card").appendChild(rerouteBtn);
 
 rerouteBtn.onclick = () => {
   index = 0;
@@ -361,9 +343,7 @@ function animate() {
     const target = Math.atan2(p2.x - p1.x, p2.z - p1.z);
     const currentHeadingRad = THREE.MathUtils.degToRad(alphaHeading);
 
-    // Minimap HUD orientation (Helmet HUD style)
-    minimapMesh.rotation.z = -(target - currentHeadingRad);
-
+    // World path logic continues...
     const diff = Math.abs(target - currentHeadingRad);
     const normalizedDiff = Math.abs(((diff + Math.PI) % (Math.PI * 2)) - Math.PI);
 
@@ -379,7 +359,6 @@ function animate() {
   }
 
   drawMiniMap();
-  minimapTexture.needsUpdate = true;
   renderer.render(scene, camera);
 }
 animate();

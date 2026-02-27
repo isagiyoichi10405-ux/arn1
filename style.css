@@ -219,11 +219,16 @@ input:focus {
 
 .nav-card {
   pointer-events: auto;
-  background: transparent;
-  padding: 24px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur);
+  padding: 20px;
   border-radius: var(--radius-md);
   animation: slideDown 0.5s ease;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(255, 0, 0, 0.2);
 }
 
 #instruction {
@@ -269,7 +274,49 @@ input:focus {
 }
 
 .minimap {
-  display: none !important;
+  display: block !important;
+  width: 150px !important;
+  height: 150px !important;
+  border-radius: 12px;
+  border: 2px solid #ff0000;
+  background: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+
+.btn-hud-next {
+  width: 100%;
+  padding: 14px;
+  background: #ff0000;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.btn-hud-next:active {
+  transform: scale(0.96);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+}
+
+.btn-hud-reset {
+  background: transparent;
+  border: none;
+  color: #ff3333;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.btn-hud-reset:hover {
+  opacity: 1;
 }
 
 /* --- NAV ACTION BUTTONS --- */
