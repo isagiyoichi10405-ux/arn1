@@ -50,7 +50,7 @@ scene.add(markerRoot);
 
 new THREEx.ArMarkerControls(arContext, markerRoot, {
   type: 'pattern',
-  patternUrl: 'data/qr-marker.patt'
+  patternUrl: 'data/markers/b8-marker.patt'
 });
 
 /* ======================
