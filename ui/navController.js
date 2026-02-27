@@ -79,12 +79,14 @@ scene.add(camera);
 /* ===============================
    DEVICE ORIENTATION
 ================================ */
-let yaw = 0;
+let yaw = 0;           // Camera rotation (CCW)
+let alphaHeading = 0;  // Raw compass heading (deg CW)
 let wrongDirTimer = 0;
 const WRONG_DIR_LIMIT = Math.PI / 2;
 
 window.addEventListener("deviceorientation", e => {
   if (e.alpha === null) return;
+  alphaHeading = e.alpha;
   yaw = -THREE.MathUtils.degToRad(e.alpha);
 });
 
@@ -236,7 +238,13 @@ function drawMiniMap() {
 
   /* ---- USER ORIENTATION ---- */
   const c = campusCoords[current];
-  drawUserArrow(sx(c.x), 160 - sz(c.z), yaw);
+  // Minimap rotation: deg CW -> rad CW
+  // We subtract 90 deg because the arrow model points UP (North) in canvas space, 
+  // but we want 0 deg to point Right (+X/East) if X is East.
+  // Actually, let's keep it simple: 0 deg = North (Up), 90 deg = East (Right).
+  // Our drawUserArrow points Up at 0 rotation. Alpha = 0 is North. 
+  // So rotation = alpha (in radians).
+  drawUserArrow(sx(c.x), 160 - sz(c.z), THREE.MathUtils.degToRad(alphaHeading));
 }
 
 /* ===============================
@@ -265,12 +273,26 @@ function animate() {
 
   const next = path[index + 1];
   if (next && !arrived) {
-    const target = angle(current, next);
-    const diff = Math.abs(target - yaw);
+    // Target calculation: North is +Z, East is +X.
+    // Geographical North (0 deg) = +Z.
+    // atan2(x, z) gives angle from +Z CW.
+    const p1 = campusCoords[current];
+    const p2 = campusCoords[next];
+    const target = Math.atan2(p2.x - p1.x, p2.z - p1.z);
 
-    arrow.rotation.z = target - yaw;
+    // Relative Angle for HUD: target (CW) - heading (CW)
+    const currentHeadingRad = THREE.MathUtils.degToRad(alphaHeading);
+    const relativeAngle = target - currentHeadingRad;
 
-    if (diff > WRONG_DIR_LIMIT) {
+    // Arrow.rotation.z is the HUD rotation. 
+    // 0 = Up, Positive = Left (CCW in HUD space if using standard atan2)
+    // Actually, simple subtraction works if we align the axes.
+    arrow.rotation.z = -relativeAngle;
+
+    const diff = Math.abs(target - currentHeadingRad);
+    const normalizedDiff = Math.abs(((diff + Math.PI) % (Math.PI * 2)) - Math.PI);
+
+    if (normalizedDiff > WRONG_DIR_LIMIT) {
       wrongDirTimer++;
       if (wrongDirTimer > 120)
         instruction.innerText = "You may be facing the wrong direction";
