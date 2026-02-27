@@ -172,7 +172,7 @@ input:focus {
   left: 0;
   right: 0;
   padding: 20px;
-  z-index: 100;
+  z-index: 400;
   pointer-events: none;
 }
 
