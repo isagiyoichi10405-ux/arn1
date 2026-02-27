@@ -62,19 +62,62 @@ window.addEventListener("resize", () => {
 });
 
 /* ===============================
-   AR ARROW
+   AR POINTERS (TURN SYMBOLS)
 ================================ */
-const arrow = new THREE.Mesh(
-  new THREE.ConeGeometry(0.25, 0.9, 24),
-  new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-);
+function createArrowShape(type = "straight") {
+  const shape = new THREE.Shape();
+  if (type === "straight") {
+    shape.moveTo(-0.15, -0.4);
+    shape.lineTo(0.15, -0.4);
+    shape.lineTo(0.15, 0.1);
+    shape.lineTo(0.3, 0.1);
+    shape.lineTo(0, 0.5);
+    shape.lineTo(-0.3, 0.1);
+    shape.lineTo(-0.15, 0.1);
+  } else if (type === "left") {
+    shape.moveTo(0.2, -0.4);
+    shape.lineTo(0.4, -0.4);
+    shape.bezierCurveTo(0.4, 0.1, 0.1, 0.3, -0.1, 0.3);
+    shape.lineTo(-0.1, 0.45);
+    shape.lineTo(-0.4, 0.25);
+    shape.lineTo(-0.1, 0.05);
+    shape.lineTo(-0.1, 0.2);
+    shape.bezierCurveTo(0.05, 0.2, 0.2, 0.05, 0.2, -0.4);
+  } else if (type === "right") {
+    shape.moveTo(-0.2, -0.4);
+    shape.lineTo(-0.4, -0.4);
+    shape.bezierCurveTo(-0.4, 0.1, -0.1, 0.3, 0.1, 0.3);
+    shape.lineTo(0.1, 0.45);
+    shape.lineTo(0.4, 0.25);
+    shape.lineTo(0.1, 0.05);
+    shape.lineTo(0.1, 0.2);
+    shape.bezierCurveTo(-0.05, 0.2, -0.2, 0.05, -0.2, -0.4);
+  }
+  return shape;
+}
 
-// Initial HUD-style rotation: Pointing UP in camera space
-arrow.rotation.set(0, 0, 0);
-arrow.position.set(0, -0.45, -1.5);
-arrow.frustumCulled = false;
+const extrudeSettings = { depth: 0.1, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02 };
+const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 
-camera.add(arrow);
+const arrowStraight = new THREE.Mesh(new THREE.ExtrudeGeometry(createArrowShape("straight"), extrudeSettings), arrowMaterial);
+const arrowLeft = new THREE.Mesh(new THREE.ExtrudeGeometry(createArrowShape("left"), extrudeSettings), arrowMaterial);
+const arrowRight = new THREE.Mesh(new THREE.ExtrudeGeometry(createArrowShape("right"), extrudeSettings), arrowMaterial);
+
+// Group to manage current visible arrow
+const arrowGroup = new THREE.Group();
+arrowGroup.add(arrowStraight, arrowLeft, arrowRight);
+arrowGroup.position.set(0, -0.45, -1.8);
+arrowGroup.frustumCulled = false;
+
+// Helper to switch arrow
+function setArrowType(type) {
+  arrowStraight.visible = (type === "straight");
+  arrowLeft.visible = (type === "left");
+  arrowRight.visible = (type === "right");
+}
+
+setArrowType("straight");
+camera.add(arrowGroup);
 scene.add(camera);
 
 /* ===============================
@@ -312,11 +355,21 @@ function animate() {
     const currentHeadingRad = THREE.MathUtils.degToRad(alphaHeading);
     const relativeAngle = target - currentHeadingRad;
 
-    // Arrow.rotation.z is the HUD rotation. 
-    // Since we fixed the initial rotation to 0 (Up),
-    // and simplified the heading logic, we use -relativeAngle 
-    // to point accurately in the HUD plane.
-    arrow.rotation.z = -relativeAngle;
+    arrowGroup.rotation.z = -relativeAngle;
+
+    // Detect turn type for the NEXT node relative to current segment
+    const prev = path[index - 1];
+    if (prev && next) {
+      const turnDelta = angle(current, next) - angle(prev, current);
+      // TurnDelta: atan2 result difference. Wrap to [-PI, PI]
+      const wrappedDelta = ((turnDelta + Math.PI) % (Math.PI * 2)) - Math.PI;
+
+      if (wrappedDelta > 0.4) setArrowType("left");
+      else if (wrappedDelta < -0.4) setArrowType("right");
+      else setArrowType("straight");
+    } else {
+      setArrowType("straight");
+    }
 
     const diff = Math.abs(target - currentHeadingRad);
     const normalizedDiff = Math.abs(((diff + Math.PI) % (Math.PI * 2)) - Math.PI);
