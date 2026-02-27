@@ -69,7 +69,8 @@ const arrow = new THREE.Mesh(
   new THREE.MeshBasicMaterial({ color: 0x00ff00 })
 );
 
-arrow.rotation.set(Math.PI / 2, 0, Math.PI);
+// Initial HUD-style rotation: Pointing UP in camera space
+arrow.rotation.set(0, 0, 0);
 arrow.position.set(0, -0.45, -1.5);
 arrow.frustumCulled = false;
 
@@ -86,8 +87,9 @@ const WRONG_DIR_LIMIT = Math.PI / 2;
 
 window.addEventListener("deviceorientation", e => {
   if (e.alpha === null) return;
-  alphaHeading = e.alpha;
-  yaw = -THREE.MathUtils.degToRad(e.alpha);
+  // Apply 180-cogree flip to align compass with map orientation
+  alphaHeading = (e.alpha + 180) % 360;
+  yaw = -THREE.MathUtils.degToRad(alphaHeading);
 });
 
 /* ===============================
@@ -285,9 +287,10 @@ function animate() {
     const relativeAngle = target - currentHeadingRad;
 
     // Arrow.rotation.z is the HUD rotation. 
-    // We add Math.PI to flip the arrow around so it points AWAY from the user 
-    // towards the target destination in the HUD plane.
-    arrow.rotation.z = Math.PI - relativeAngle;
+    // Since we fixed the initial rotation to 0 (Up),
+    // and simplified the heading logic, we use -relativeAngle 
+    // to point accurately in the HUD plane.
+    arrow.rotation.z = -relativeAngle;
 
     const diff = Math.abs(target - currentHeadingRad);
     const normalizedDiff = Math.abs(((diff + Math.PI) % (Math.PI * 2)) - Math.PI);
