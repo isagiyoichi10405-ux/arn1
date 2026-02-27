@@ -108,25 +108,20 @@ function approxDistance(a, b) {
   return Math.round(Math.hypot(p2.x - p1.x, p2.z - p1.z) * 10);
 }
 
-function updateInstruction() {
-  const prev = path[index - 1];
-  const curr = path[index];
+function updateInstruction(showWarning = false) {
   const next = path[index + 1];
 
-  if (!prev || !next) {
+  if (arrived || !next) {
     instruction.innerText = "Scan destination QR to confirm arrival";
     return;
   }
 
-  const delta = angle(curr, next) - angle(prev, curr);
-  const dist = approxDistance(curr, next);
-
-  if (delta > 0.4)
-    instruction.innerText = `Turn Left • ${dist}m`;
-  else if (delta < -0.4)
-    instruction.innerText = `Turn Right • ${dist}m`;
-  else
-    instruction.innerText = `Go Straight • ${dist}m`;
+  if (showWarning) {
+    instruction.innerText = "Pointing Wrong Direction";
+  } else {
+    const dist = approxDistance(current, next);
+    instruction.innerText = `${next} • ${dist}m`;
+  }
 }
 
 /* ===============================
@@ -328,10 +323,12 @@ function animate() {
 
     if (normalizedDiff > WRONG_DIR_LIMIT) {
       wrongDirTimer++;
-      if (wrongDirTimer > 120)
-        instruction.innerText = "You may be facing the wrong direction";
+      if (wrongDirTimer > 60) {
+        updateInstruction(true);
+      }
     } else {
       wrongDirTimer = 0;
+      updateInstruction(false);
     }
   }
 
