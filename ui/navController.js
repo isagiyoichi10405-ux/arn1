@@ -73,60 +73,23 @@ window.addEventListener("resize", () => {
 /* ===============================
    AR POINTERS (TURN SYMBOLS)
 ================================ */
-function createArrowShape(type = "straight") {
-  const shape = new THREE.Shape();
-  if (type === "straight") {
-    shape.moveTo(-0.15, -0.4);
-    shape.lineTo(0.15, -0.4);
-    shape.lineTo(0.15, 0.1);
-    shape.lineTo(0.3, 0.1);
-    shape.lineTo(0, 0.5);
-    shape.lineTo(-0.3, 0.1);
-    shape.lineTo(-0.15, 0.1);
-  } else if (type === "left") {
-    shape.moveTo(0.2, -0.4);
-    shape.lineTo(0.4, -0.4);
-    shape.bezierCurveTo(0.4, 0.1, 0.1, 0.3, -0.1, 0.3);
-    shape.lineTo(-0.1, 0.45);
-    shape.lineTo(-0.4, 0.25);
-    shape.lineTo(-0.1, 0.05);
-    shape.lineTo(-0.1, 0.2);
-    shape.bezierCurveTo(0.05, 0.2, 0.2, 0.05, 0.2, -0.4);
-  } else if (type === "right") {
-    shape.moveTo(-0.2, -0.4);
-    shape.lineTo(-0.4, -0.4);
-    shape.bezierCurveTo(-0.4, 0.1, -0.1, 0.3, 0.1, 0.3);
-    shape.lineTo(0.1, 0.45);
-    shape.lineTo(0.4, 0.25);
-    shape.lineTo(0.1, 0.05);
-    shape.lineTo(0.1, 0.2);
-    shape.bezierCurveTo(-0.05, 0.2, -0.2, 0.05, -0.2, -0.4);
-  }
-  return shape;
-}
+/* ===============================
+   3D MINIMAP OVERLAY (REPLACES ARROWS)
+================================ */
+const minimapPlaneGeo = new THREE.PlaneGeometry(0.8, 0.8);
+const minimapTexture = new THREE.CanvasTexture(map);
+const minimapMaterial = new THREE.MeshBasicMaterial({
+  map: minimapTexture,
+  transparent: true,
+  opacity: 0.9,
+  side: THREE.DoubleSide
+});
+const minimapMesh = new THREE.Mesh(minimapPlaneGeo, minimapMaterial);
 
-const extrudeSettings = { depth: 0.1, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02 };
-const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-
-const arrowStraight = new THREE.Mesh(new THREE.ExtrudeGeometry(createArrowShape("straight"), extrudeSettings), arrowMaterial);
-const arrowLeft = new THREE.Mesh(new THREE.ExtrudeGeometry(createArrowShape("left"), extrudeSettings), arrowMaterial);
-const arrowRight = new THREE.Mesh(new THREE.ExtrudeGeometry(createArrowShape("right"), extrudeSettings), arrowMaterial);
-
-// Group to manage current visible arrow
-const arrowGroup = new THREE.Group();
-arrowGroup.add(arrowStraight, arrowLeft, arrowRight);
-arrowGroup.position.set(0, -0.45, -1.8);
-arrowGroup.frustumCulled = false;
-
-// Helper to switch arrow
-function setArrowType(type) {
-  arrowStraight.visible = (type === "straight");
-  arrowLeft.visible = (type === "left");
-  arrowRight.visible = (type === "right");
-}
-
-setArrowType("straight");
-camera.add(arrowGroup);
+// Position it in front of the camera, slightly tilted
+minimapMesh.position.set(0, -0.4, -1.5);
+minimapMesh.rotation.x = -Math.PI / 6; // Tilt back slightly
+camera.add(minimapMesh);
 scene.add(camera);
 
 /* ===============================
@@ -180,8 +143,8 @@ function updateInstruction(showWarning = false) {
    MINIMAP SETUP
 ================================ */
 const map = document.createElement("canvas");
-map.width = 160;
-map.height = 160;
+map.width = 300;
+map.height = 300;
 map.className = "minimap";
 document.body.appendChild(map);
 
@@ -217,8 +180,11 @@ function drawLabel(text, x, y, color = "#ffffff") {
 /* ===============================
    DRAW MINIMAP (CORRECT VERSION)
 ================================ */
+/* ===============================
+   DRAW MINIMAP (CORRECT VERSION)
+================================ */
 function drawMiniMap() {
-  ctx.clearRect(0, 0, 160, 160);
+  ctx.clearRect(0, 0, 300, 300);
 
   const nodes = path.map(id => campusCoords[id]);
   const xs = nodes.map(n => n.x);
@@ -227,17 +193,17 @@ function drawMiniMap() {
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minZ = Math.min(...zs), maxZ = Math.max(...zs);
 
-  const sx = x => ((x - minX) / (maxX - minX)) * 120 + 20;
-  const sz = z => ((z - minZ) / (maxZ - minZ)) * 120 + 20;
+  const sx = x => ((x - minX) / (maxX - minX)) * 240 + 30;
+  const sz = z => ((z - minZ) / (maxZ - minZ)) * 240 + 30;
 
   /* ---- PATH + NODES (INVERTED Y) ---- */
   ctx.save();
-  ctx.translate(0, 160);
+  ctx.translate(0, 300);
   ctx.scale(1, -1);
 
   // Path
   ctx.strokeStyle = "#00c6ff";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3;
   ctx.beginPath();
   path.forEach((id, i) => {
     const p = campusCoords[id];
@@ -258,7 +224,7 @@ function drawMiniMap() {
 
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(sx(p.x), sz(p.z), 4, 0, Math.PI * 2);
+    ctx.arc(sx(p.x), sz(p.z), 6, 0, Math.PI * 2);
     ctx.fill();
   });
 
@@ -268,7 +234,7 @@ function drawMiniMap() {
   path.forEach((id, i) => {
     const p = campusCoords[id];
     const x = sx(p.x);
-    const y = 160 - sz(p.z);
+    const y = 300 - sz(p.z);
 
     if (
       i === 0 ||
@@ -288,13 +254,7 @@ function drawMiniMap() {
 
   /* ---- USER ORIENTATION ---- */
   const c = campusCoords[current];
-  // Minimap rotation: deg CW -> rad CW
-  // We subtract 90 deg because the arrow model points UP (North) in canvas space, 
-  // but we want 0 deg to point Right (+X/East) if X is East.
-  // Actually, let's keep it simple: 0 deg = North (Up), 90 deg = East (Right).
-  // Our drawUserArrow points Up at 0 rotation. Alpha = 0 is North. 
-  // So rotation = alpha (in radians).
-  drawUserArrow(sx(c.x), 160 - sz(c.z), THREE.MathUtils.degToRad(alphaHeading));
+  drawUserArrow(sx(c.x), 300 - sz(c.z), THREE.MathUtils.degToRad(alphaHeading));
 }
 
 /* ===============================
@@ -320,7 +280,8 @@ function nextStep() {
 ================================ */
 const nextBtn = document.createElement("button");
 nextBtn.className = "nav-action-btn btn-next";
-nextBtn.style.bottom = "160px"; // Directly above 120px minimap
+nextBtn.style.bottom = "40px";
+nextBtn.style.right = "24px";
 nextBtn.innerText = "👣 Next Step";
 document.body.appendChild(nextBtn);
 
@@ -328,7 +289,8 @@ nextBtn.onclick = nextStep;
 
 const rerouteBtn = document.createElement("button");
 rerouteBtn.className = "nav-action-btn btn-reset";
-rerouteBtn.style.bottom = "220px"; // Above Next Step button
+rerouteBtn.style.bottom = "40px";
+rerouteBtn.style.left = "24px";
 rerouteBtn.innerText = "🔄 Reset";
 document.body.appendChild(rerouteBtn);
 
@@ -355,32 +317,13 @@ function animate() {
 
   const next = path[index + 1];
   if (next && !arrived) {
-    // Target calculation: North is +Z, East is +X.
-    // Geographical North (0 deg) = +Z.
-    // atan2(x, z) gives angle from +Z CW.
     const p1 = campusCoords[current];
     const p2 = campusCoords[next];
     const target = Math.atan2(p2.x - p1.x, p2.z - p1.z);
-
-    // Relative Angle for HUD: target (CW) - heading (CW)
     const currentHeadingRad = THREE.MathUtils.degToRad(alphaHeading);
     const relativeAngle = target - currentHeadingRad;
 
-    arrowGroup.rotation.z = -relativeAngle;
-
-    // Detect turn type for the NEXT node relative to current segment
-    const prev = path[index - 1];
-    if (prev && next) {
-      const turnDelta = angle(current, next) - angle(prev, current);
-      // TurnDelta: atan2 result difference. Wrap to [-PI, PI]
-      const wrappedDelta = ((turnDelta + Math.PI) % (Math.PI * 2)) - Math.PI;
-
-      if (wrappedDelta > 0.4) setArrowType("left");
-      else if (wrappedDelta < -0.4) setArrowType("right");
-      else setArrowType("straight");
-    } else {
-      setArrowType("straight");
-    }
+    minimapMesh.rotation.z = -relativeAngle;
 
     const diff = Math.abs(target - currentHeadingRad);
     const normalizedDiff = Math.abs(((diff + Math.PI) % (Math.PI * 2)) - Math.PI);
@@ -396,12 +339,8 @@ function animate() {
     }
   }
 
-  // Pulsing Effect for AR Arrows
-  const pulse = Math.sin(Date.now() * 0.005) * 0.25 + 0.75;
-  arrowMaterial.opacity = pulse;
-  arrowMaterial.transparent = true;
-
   drawMiniMap();
+  minimapTexture.needsUpdate = true;
   renderer.render(scene, camera);
 }
 animate();

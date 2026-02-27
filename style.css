@@ -265,24 +265,12 @@ input:focus {
 }
 
 .minimap {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 120px !important;
-  height: 120px !important;
-  border-radius: var(--radius-md) !important;
-  border: 2px solid var(--glass-border);
-  background: rgba(0, 0, 0, 0.7);
-  overflow: hidden;
-  z-index: 200;
-  /* Reset object-fit and position just in case */
-  object-fit: contain !important;
+  display: none !important;
 }
 
 /* --- NAV ACTION BUTTONS --- */
 .nav-action-btn {
   position: fixed;
-  right: 24px;
   width: 120px;
   height: 48px;
   padding: 0 16px;
