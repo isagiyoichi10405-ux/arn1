@@ -206,7 +206,7 @@ input:focus {
   right: 24px;
   width: 120px !important;
   height: 120px !important;
-  border-radius: 50% !important;
+  border-radius: var(--radius-md) !important;
   border: 2px solid var(--glass-border);
   background: rgba(0, 0, 0, 0.7);
   overflow: hidden;
