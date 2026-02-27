@@ -87,8 +87,9 @@ const WRONG_DIR_LIMIT = Math.PI / 2;
 
 window.addEventListener("deviceorientation", e => {
   if (e.alpha === null) return;
-  // Apply 180-cogree flip to align compass with map orientation
-  alphaHeading = (e.alpha + 180) % 360;
+  // Normalized CW heading: (180 - alpha) aligns with map orientation + CW winding
+  alphaHeading = (180 - e.alpha + 360) % 360;
+  // Camera yaw for Three.js (CCW)
   yaw = -THREE.MathUtils.degToRad(alphaHeading);
 });
 
