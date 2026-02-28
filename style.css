@@ -218,32 +218,31 @@ input:focus {
 }
 
 .nav-card {
-  pointer-events: auto;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: var(--glass-blur);
-  padding: 18px;
+  padding: 12px 16px;
   border-radius: var(--radius-md);
   animation: slideDown 0.5s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   border: 1px solid rgba(0, 255, 136, 0.2);
+  max-width: 320px;
+  margin: 0 auto;
 }
 
 #instruction {
   font-family: 'Outfit', sans-serif;
-  font-size: 1.8rem;
+  font-size: 1.2rem;
   font-weight: 800;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: var(--secondary);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
 }
 
 .hud-sub {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: var(--primary);
   opacity: 0.9;
   font-weight: 600;

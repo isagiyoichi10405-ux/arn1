@@ -79,7 +79,7 @@ function createWorldPath() {
   pathGroup.clear();
   const points = path.map(id => {
     const coords = campusCoords[id];
-    return new THREE.Vector3(coords.x * 5, -1.6, coords.z * 5);
+    return new THREE.Vector3(coords.x * 10, -1.6, coords.z * 10);
   });
 
   const curve = new THREE.CatmullRomCurve3(points);
@@ -333,7 +333,7 @@ function animate() {
 
   // World-Space Viewport Logic
   const currentPos = campusCoords[current];
-  camera.position.set(currentPos.x * 5, 0, currentPos.z * 5);
+  camera.position.set(currentPos.x * 10, 0, currentPos.z * 10);
   camera.rotation.set(0, yaw, 0);
 
   const next = path[index + 1];
