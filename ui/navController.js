@@ -335,17 +335,21 @@ function nextStep() {
 /* ===============================
    UI BUTTONS (INTEGRATED INTO HUD)
 ================================ */
+const hudContainer = document.createElement("div");
+hudContainer.className = "hud-container";
+document.body.appendChild(hudContainer);
+
 const nextBtn = document.createElement("button");
 nextBtn.className = "btn-hud-next";
 nextBtn.innerHTML = "STEP FORWARD 👣";
-document.body.appendChild(nextBtn);
+hudContainer.appendChild(nextBtn);
 
 nextBtn.onclick = nextStep;
 
 const rerouteBtn = document.createElement("button");
 rerouteBtn.className = "btn-hud-reset";
 rerouteBtn.innerText = "🔄 Reset";
-document.body.appendChild(rerouteBtn);
+hudContainer.appendChild(rerouteBtn);
 
 rerouteBtn.onclick = () => {
   index = 0;
