@@ -44,6 +44,11 @@ function updateProgressBar() {
   }
 }
 
+// Visual Warning Overlay
+const warningOverlay = document.createElement("div");
+warningOverlay.className = "wrong-direction-overlay";
+document.body.appendChild(warningOverlay);
+
 updateInstruction();
 updateProgressBar();
 
@@ -97,9 +102,19 @@ function makeTextLabel(text) {
   ctx.fillText(text, 128, 32);
 
   const texture = new THREE.CanvasTexture(canvas);
-  const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    opacity: 0.9
+  });
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(1.5, 0.375, 1);
+
+  // Subtle holographic drift
+  sprite.onBeforeRender = () => {
+    sprite.position.y += Math.sin(Date.now() * 0.002) * 0.0005;
+  };
+
   return sprite;
 }
 
@@ -248,7 +263,7 @@ function drawLabel(text, x, y, color = "#ffffff") {
    DRAW MINIMAP (CORRECT VERSION)
 ================================ */
 function drawMiniMap() {
-  ctx.clearRect(0, 0, 300, 300);
+  ctx.clearRect(0, 0, 150, 150);
 
   const nodes = path.map(id => campusCoords[id]);
   const xs = nodes.map(n => n.x);
@@ -257,15 +272,11 @@ function drawMiniMap() {
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minZ = Math.min(...zs), maxZ = Math.max(...zs);
 
-  const sx = x => ((x - minX) / (maxX - minX)) * 90 + 30;
-  const sz = z => ((z - minZ) / (maxZ - minZ)) * 90 + 30;
+  // Map campus coords to minimap pixels (north-up: small z = top of screen)
+  const sx = x => ((x - minX) / (maxX - minX || 1)) * 90 + 30;
+  const sz = z => ((z - minZ) / (maxZ - minZ || 1)) * 90 + 30;
 
-  /* ---- PATH + NODES (INVERTED Y) ---- */
-  ctx.save();
-  ctx.translate(0, 150);
-  ctx.scale(1, -1);
-
-  // Path
+  /* ---- PATH ---- */
   ctx.strokeStyle = "#00c6ff";
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -277,11 +288,10 @@ function drawMiniMap() {
   });
   ctx.stroke();
 
-  // Nodes
+  /* ---- NODES ---- */
   path.forEach((id, i) => {
     const p = campusCoords[id];
     let color = "rgba(255,255,255,0.7)";
-
     if (i === 0) color = "#00ffcc";                     // START
     else if (i === path.length - 1) color = "#ff5555"; // END
     else if (i === index) color = "#00ff88";           // CURRENT
@@ -292,26 +302,23 @@ function drawMiniMap() {
     ctx.fill();
   });
 
-  ctx.restore();
-
-  /* ---- LABELS (NORMAL CANVAS SPACE) ---- */
+  /* ---- LABELS ---- */
   path.forEach((id, i) => {
     const p = campusCoords[id];
     const x = sx(p.x);
-    const y = 300 - sz(p.z);
-
-    {
+    const y = sz(p.z);
+    if (i === 0 || i === path.length - 1 || i === index ||
+      id.startsWith("B") || id.includes("HOSTEL") || id.includes("ADMIN")) {
       let label = id;
       if (i === 0) label = "START";
-      else if (i === path.length - 1) label = "END";
-
+      else if (i === path.length - 1) label = id;
       drawLabel(label, x, y);
     }
   });
 
-  /* ---- USER ORIENTATION ---- */
+  /* ---- USER ARROW (north-up, matches 3D camera) ---- */
   const c = campusCoords[current];
-  drawUserArrow(sx(c.x), 300 - sz(c.z), THREE.MathUtils.degToRad(alphaHeading));
+  drawUserArrow(sx(c.x), sz(c.z), THREE.MathUtils.degToRad(alphaHeading));
 }
 
 /* ===============================
@@ -394,10 +401,12 @@ function animate() {
       wrongDirTimer++;
       if (wrongDirTimer > 60) {
         updateInstruction(true);
+        warningOverlay.classList.add("active");
       }
     } else {
       wrongDirTimer = 0;
       updateInstruction(false);
+      warningOverlay.classList.remove("active");
     }
   }
 

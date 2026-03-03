@@ -4,6 +4,14 @@ import { setRoute } from "../state/navigationStore.js";
 
 const normalize = s => s.replace(/\s+/g, "_").toUpperCase();
 
+// Dynamic Background tracking
+document.addEventListener('mousemove', e => {
+  const x = (e.clientX / window.innerWidth) * 100;
+  const y = (e.clientY / window.innerHeight) * 100;
+  document.body.style.setProperty('--mouse-x', `${x}%`);
+  document.body.style.setProperty('--mouse-y', `${y}%`);
+});
+
 const locText = document.getElementById("locText");
 const startBtn = document.getElementById("startBtn");
 
@@ -56,8 +64,12 @@ if (startScanBtn) {
 
           locText.value = source;
           qrStatus.innerText = `Matched: ${source}`;
+          qrOverlay.classList.add("success");
 
-          scanner.stop().then(showApp);
+          setTimeout(() => {
+            scanner.stop().then(showApp);
+            qrOverlay.classList.remove("success");
+          }, 1000);
         }
       );
     } catch (err) {
@@ -143,5 +155,11 @@ startBtn.onclick = () => {
     JSON.stringify({ source, destination, path })
   );
 
-  window.location.href = "nav.html";
+  const warpOverlay = document.getElementById("warp-overlay");
+  appUI.classList.add("fade-out");
+  warpOverlay.classList.add("active");
+
+  setTimeout(() => {
+    window.location.href = "nav.html";
+  }, 800);
 };
