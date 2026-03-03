@@ -1,28 +1,77 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap');
 
 :root {
-  /* Color Palette - Cyber / Premium */
+  /* Color Palette - Default (Dark) */
   --primary: #00f2ff;
-  /* Electric Cyan */
   --secondary: #00ff88;
-  /* Spring Green */
   --accent: #7000ff;
-  /* Neon Purple */
   --bg-deep: #050a10;
-  /* Deep Space */
   --text-main: #ffffff;
   --text-dim: rgba(255, 255, 255, 0.7);
-
-  /* Glassmorphism */
   --glass-bg: rgba(15, 25, 35, 0.7);
   --glass-border: rgba(255, 255, 255, 0.2);
   --glass-blur: blur(24px);
-
-  /* Layout */
-  --radius-lg: 32px;
-  --radius-md: 20px;
   --shadow-glow: 0 0 30px rgba(0, 242, 255, 0.3);
   --shadow-green: 0 0 30px rgba(0, 255, 136, 0.4);
+
+  --radius-lg: 32px;
+  --radius-md: 20px;
+}
+
+body.light-theme {
+  --primary: #0077ff;
+  /* Deeper blue for visibility */
+  --secondary: #00aa55;
+  /* Darker green */
+  --accent: #5500aa;
+  --bg-deep: #f0f4f8;
+  /* Light grey/blue */
+  --text-main: #1a202c;
+  --text-dim: rgba(26, 32, 44, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 10px 30px rgba(0, 119, 255, 0.2);
+  --shadow-green: 0 10px 30px rgba(0, 170, 85, 0.2);
+}
+
+body.light-theme #qr-overlay {
+  background: radial-gradient(circle at center, #ffffff 0%, #d1d5db 100%);
+}
+
+body.light-theme input {
+  background: rgba(0, 0, 0, 0.05);
+  color: #000;
+}
+
+body.light-theme .blocks-grid {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.light-theme .chip {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .chip:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #000;
+}
+
+body.light-theme .chip.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+body.light-theme .btn-primary {
+  color: #fff;
+}
+
+body.light-theme .btn-hud-next {
+  color: #fff;
+}
+
+body.light-theme .minimap {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--primary);
 }
 
 * {
@@ -445,6 +494,36 @@ input:focus {
   background: rgba(0, 0, 0, 0.6);
   box-shadow: 0 0 15px rgba(0, 255, 136, 0.15);
   animation: radarPulse 3s infinite linear;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.minimap:hover {
+  transform: scale(1.05);
+}
+
+.node-info-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  padding: 20px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-md);
+  color: white;
+  z-index: 2000;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.node-info-popup.active {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
 }
 
 @keyframes radarPulse {

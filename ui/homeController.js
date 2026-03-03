@@ -12,6 +12,16 @@ document.addEventListener('mousemove', e => {
   document.body.style.setProperty('--mouse-y', `${y}%`);
 });
 
+function checkTheme() {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 18) {
+    document.body.classList.add('light-theme');
+  } else {
+    document.body.classList.remove('light-theme');
+  }
+}
+checkTheme();
+
 const locText = document.getElementById("locText");
 const startBtn = document.getElementById("startBtn");
 

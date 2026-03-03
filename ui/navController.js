@@ -30,6 +30,16 @@ let index = 0;
 let current = path[index];
 let arrived = false;
 
+function checkTheme() {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 18) {
+    document.body.classList.add('light-theme');
+  } else {
+    document.body.classList.remove('light-theme');
+  }
+}
+checkTheme();
+
 /* ===============================
    UI ELEMENTS
 ================================ */
@@ -79,8 +89,37 @@ window.addEventListener("resize", () => {
 ================================ */
 const pathGroup = new THREE.Group();
 const labelGroup = new THREE.Group();
+const particleGroup = new THREE.Group();
 scene.add(pathGroup);
 scene.add(labelGroup);
+scene.add(particleGroup);
+
+/* ===============================
+   PARTICLE SYSTEM
+ ================================ */
+function createParticles() {
+  const geo = new THREE.BufferGeometry();
+  const count = 500;
+  const pos = new Float32Array(count * 3);
+
+  for (let i = 0; i < count * 3; i++) {
+    pos[i] = (Math.random() - 0.5) * 40;
+  }
+
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+
+  const mat = new THREE.PointsMaterial({
+    color: 0x00f2ff,
+    size: 0.05,
+    transparent: true,
+    opacity: 0.4,
+    blending: THREE.AdditiveBlending
+  });
+
+  const particles = new THREE.Points(geo, mat);
+  particleGroup.add(particles);
+}
+createParticles();
 
 function makeTextLabel(text) {
   const canvas = document.createElement("canvas");
@@ -195,6 +234,15 @@ function approxDistance(a, b) {
   return Math.round(Math.hypot(p2.x - p1.x, p2.z - p1.z) * 10);
 }
 
+const synth = window.speechSynthesis;
+function speak(text) {
+  if (synth.speaking) synth.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 1.1;
+  utter.pitch = 1.0;
+  synth.speak(utter);
+}
+
 function updateInstruction(showWarning = false) {
   const start = path[0];
   const end = path.at(-1);
@@ -229,9 +277,49 @@ document.querySelector(".nav-card").appendChild(map);
 
 const ctx = map.getContext("2d");
 
+// Node Info Popup
+const popup = document.createElement("div");
+popup.className = "node-info-popup";
+document.body.appendChild(popup);
+
+function showNodeInfo(id) {
+  const dist = approxDistance(current, id);
+  popup.innerHTML = `
+    <h3 style="color:var(--primary); margin-bottom:8px;">${id.replace("_", " ")}</h3>
+    <div style="font-size:0.9rem; opacity:0.8;">Distance from current: ${dist}m</div>
+    <button class="chip" style="margin-top:16px; width:100%;" onclick="this.parentElement.classList.remove('active')">Got it</button>
+  `;
+  popup.classList.add("active");
+  speak(`Building ${id.replace("_", " ")}. Distance: ${dist} meters.`);
+}
+
+map.onclick = (e) => {
+  const rect = map.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  const nodes = path.map(id => campusCoords[id]);
+  const xs = nodes.map(n => n.x);
+  const zs = nodes.map(n => n.z);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minZ = Math.min(...zs), maxZ = Math.max(...zs);
+  const sx = x => ((x - minX) / (maxX - minX || 1)) * 90 + 30;
+  const sz = z => ((z - minZ) / (maxZ - minZ || 1)) * 90 + 30;
+
+  path.forEach((id, i) => {
+    const p = campusCoords[id];
+    const nx = sx(p.x);
+    const ny = sz(p.z);
+    const d = Math.hypot(mouseX - nx, mouseY - ny);
+    if (d < 10) {
+      showNodeInfo(id);
+    }
+  });
+};
+
 /* ===============================
    MINIMAP HELPERS
-================================ */
+ ================================ */
 function drawUserArrow(x, y, a) {
   ctx.save();
   ctx.translate(x, y);
@@ -335,6 +423,10 @@ function nextStep() {
     if (index === path.length - 1) {
       arrived = true;
       instruction.innerText = "Scan destination QR to confirm arrival";
+      speak("Destination reached. Please scan the QR code to confirm arrival.");
+    } else if (next) {
+      const dist = approxDistance(current, next);
+      speak(`Proceed ${dist} meters to ${next}`);
     }
   }
 }
@@ -409,6 +501,16 @@ function animate() {
       warningOverlay.classList.remove("active");
     }
   }
+
+  // Animate Particles
+  particleGroup.children.forEach(p => {
+    p.rotation.y += 0.001;
+    const positions = p.geometry.attributes.position.array;
+    for (let i = 1; i < positions.length; i += 3) {
+      positions[i] += Math.sin(time + i) * 0.002; // Vertical drift
+    }
+    p.geometry.attributes.position.needsUpdate = true;
+  });
 
   drawMiniMap();
   renderer.render(scene, camera);
