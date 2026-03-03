@@ -315,24 +315,25 @@ input:focus {
 
 .btn-hud-next {
   position: fixed;
-  bottom: 40px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 240px;
-  padding: 20px;
+  width: min(90vw, 360px);
+  padding: 22px 0;
   background: linear-gradient(135deg, var(--secondary), var(--primary));
   color: #000;
   border: none;
   border-radius: 100px;
   font-family: 'Outfit', sans-serif;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: var(--shadow-green);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
   z-index: 1000;
+  pointer-events: auto;
 }
 
 .btn-hud-next:hover {
@@ -346,13 +347,20 @@ input:focus {
 }
 
 .btn-hud-reset {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
   background: transparent;
   border: none;
   color: var(--secondary);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  opacity: 0.6;
+  opacity: 0.7;
+  z-index: 1000;
+  pointer-events: auto;
+  white-space: nowrap;
 }
 
 .btn-hud-reset:hover {

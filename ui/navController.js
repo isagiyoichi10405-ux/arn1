@@ -343,16 +343,16 @@ function nextStep() {
    UI BUTTONS (INTEGRATED INTO HUD)
 ================================ */
 const nextBtn = document.createElement("button");
-nextBtn.className = "nav-action-btn btn-hud-next";
+nextBtn.className = "btn-hud-next";
 nextBtn.innerHTML = "STEP FORWARD 👣";
-document.querySelector(".nav-card").appendChild(nextBtn);
+document.body.appendChild(nextBtn);
 
 nextBtn.onclick = nextStep;
 
 const rerouteBtn = document.createElement("button");
 rerouteBtn.className = "btn-hud-reset";
 rerouteBtn.innerText = "🔄 Reset";
-document.querySelector(".nav-card").appendChild(rerouteBtn);
+document.body.appendChild(rerouteBtn);
 
 rerouteBtn.onclick = () => {
   index = 0;
