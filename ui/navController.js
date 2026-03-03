@@ -335,32 +335,25 @@ function nextStep() {
 /* ===============================
    UI BUTTONS (INTEGRATED INTO HUD)
 ================================ */
-const hudContainer = document.createElement("div");
-hudContainer.className = "hud-container";
-document.body.appendChild(hudContainer);
+const nextBtn = document.getElementById("nextBtn");
+const rerouteBtn = document.getElementById("rerouteBtn");
 
-const nextBtn = document.createElement("button");
-nextBtn.className = "btn-hud-next";
-nextBtn.innerHTML = "STEP FORWARD 👣";
-hudContainer.appendChild(nextBtn);
+if (nextBtn) {
+  nextBtn.onclick = nextStep;
+}
 
-nextBtn.onclick = nextStep;
-
-const rerouteBtn = document.createElement("button");
-rerouteBtn.className = "btn-hud-reset";
-rerouteBtn.innerText = "🔄 Reset";
-hudContainer.appendChild(rerouteBtn);
-
-rerouteBtn.onclick = () => {
-  index = 0;
-  current = path[0];
-  arrived = false;
-  wrongDirTimer = 0;
-  distance.innerText = `${path.length - 1} steps remaining`;
-  updateInstruction();
-  updateProgressBar();
-  createWorldPath();
-};
+if (rerouteBtn) {
+  rerouteBtn.onclick = () => {
+    index = 0;
+    current = path[0];
+    arrived = false;
+    wrongDirTimer = 0;
+    distance.innerText = `${path.length - 1} steps remaining`;
+    updateInstruction();
+    updateProgressBar();
+    createWorldPath();
+  };
+}
 
 // Tap to advance on canvas
 renderer.domElement.addEventListener("click", nextStep);
