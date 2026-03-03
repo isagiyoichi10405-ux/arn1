@@ -131,14 +131,17 @@ function createWorldPath() {
     node.name = i === index ? "activeNode" : "node";
     pathGroup.add(node);
 
-    // Add labels for all block/location nodes
-    let labelText = id;
-    if (i === 0) labelText = "START";
-    if (i === path.length - 1) labelText = "FINISH";
+    // Add labels for blocks, roads and key locations
+    if (id.startsWith("B") || id.startsWith("R") || id.includes("HOSTEL") || id.includes("ADMIN") || i === 0 || i === path.length - 1) {
+      let labelText = id;
+      if (id.startsWith("R")) labelText = "ROAD";
+      if (i === 0) labelText = "START";
+      if (i === path.length - 1) labelText = id;
 
-    const label = makeTextLabel(labelText);
-    label.position.set(p.x, p.y + 0.6, p.z);
-    labelGroup.add(label);
+      const label = makeTextLabel(labelText);
+      label.position.set(p.x, p.y + 0.6, p.z);
+      labelGroup.add(label);
+    }
   });
 }
 
@@ -342,7 +345,7 @@ nextBtn.onclick = nextStep;
 const rerouteBtn = document.createElement("button");
 rerouteBtn.className = "btn-hud-reset";
 rerouteBtn.innerText = "🔄 Reset";
-document.querySelector(".nav-card").appendChild(rerouteBtn);
+document.body.appendChild(rerouteBtn);
 
 rerouteBtn.onclick = () => {
   index = 0;
