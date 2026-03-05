@@ -336,10 +336,16 @@ function drawUserArrow(x, y, a) {
 
 function drawLabel(text, x, y, color = "#ffffff") {
   ctx.save();
-  ctx.fillStyle = color;
-  ctx.font = "10px system-ui";
+  ctx.font = "bold 11px system-ui";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
+
+  // Outer glow/stroke for legibility
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.8)";
+  ctx.lineWidth = 3;
+  ctx.strokeText(text, x, y + 6);
+
+  ctx.fillStyle = color;
   ctx.fillText(text, x, y + 6);
   ctx.restore();
 }
