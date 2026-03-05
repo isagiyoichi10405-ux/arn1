@@ -44,26 +44,41 @@ body.light-theme #qr-overlay.success {
 
 .scanner-branding {
   position: absolute;
-  top: 40px;
+  top: 45%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   font-family: 'Outfit', sans-serif;
   font-weight: 800;
-  font-size: 1.5rem;
+  font-size: 2.2rem;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 4px;
   color: var(--primary);
-  text-shadow: 0 0 15px var(--primary);
+  text-shadow: 0 0 20px var(--primary);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  z-index: 10;
-  opacity: 0.8;
+  gap: 15px;
+  z-index: 1500;
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .logo-icon {
-  font-size: 1.8rem;
-  filter: drop-shadow(0 0 8px var(--primary));
+  font-size: 3.5rem;
+  filter: drop-shadow(0 0 10px var(--primary));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 body.light-theme input {

@@ -127,15 +127,15 @@ function makeTextLabel(text) {
   canvas.width = 256;
   canvas.height = 64;
 
-  ctx.fillStyle = "rgba(0,0,0,0.6)";
-  ctx.roundRect(0, 0, 256, 64, 12);
+  ctx.fillStyle = "rgba(0,0,0,0.85)"; // More opaque
+  ctx.roundRect(0, 0, 256, 64, 16);
   ctx.fill();
-  ctx.strokeStyle = "#00ff88";
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#00f2ff"; // Match primary cyan
+  ctx.lineWidth = 4;
   ctx.stroke();
 
   ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 28px Outfit, sans-serif";
+  ctx.font = "bold 32px Outfit, sans-serif"; // Slightly larger
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, 128, 32);
@@ -144,10 +144,10 @@ function makeTextLabel(text) {
   const material = new THREE.SpriteMaterial({
     map: texture,
     transparent: true,
-    opacity: 0.9
+    opacity: 0.95
   });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(1.5, 0.375, 1);
+  sprite.scale.set(2.4, 0.6, 1); // Increased scale from 1.5, 0.375
 
   // Subtle holographic drift
   sprite.onBeforeRender = () => {
@@ -193,7 +193,7 @@ function createWorldPath() {
       if (i === path.length - 1) labelText = id;
 
       const label = makeTextLabel(labelText);
-      label.position.set(p.x, p.y + 0.6, p.z);
+      label.position.set(p.x, p.y + 1.0, p.z); // Increased offset from 0.6 to 1.0
       labelGroup.add(label);
     }
   });
@@ -396,18 +396,26 @@ function drawMiniMap() {
     ctx.fill();
   });
 
-  /* ---- LABELS ---- */
+  /* ---- LABELS (Smart overlapping) ---- */
+  const drawnPositions = [];
   path.forEach((id, i) => {
+    const isPriority = (i === 0 || i === path.length - 1 || i === index);
+    if (!isPriority && !id.startsWith("B") && !id.includes("HOSTEL") && !id.includes("ADMIN")) return;
+
     const p = campusCoords[id];
     const x = sx(p.x);
     const y = sz(p.z);
-    if (i === 0 || i === path.length - 1 || i === index ||
-      id.startsWith("B") || id.includes("HOSTEL") || id.includes("ADMIN")) {
-      let label = id;
-      if (i === 0) label = "START";
-      else if (i === path.length - 1) label = id;
-      drawLabel(label, x, y);
-    }
+
+    // Skip if too close to already drawn labels (25px threshold)
+    const tooClose = drawnPositions.some(pos => Math.hypot(pos.x - x, pos.y - y) < 25);
+    if (tooClose && !isPriority) return;
+
+    let label = id;
+    if (i === 0) label = "START";
+    else if (i === path.length - 1) label = id;
+
+    drawLabel(label, x, y);
+    drawnPositions.push({ x, y });
   });
 
   /* ---- USER ARROW (north-up, matches 3D camera) ---- */
