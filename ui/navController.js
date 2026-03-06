@@ -157,6 +157,30 @@ function makeTextLabel(text) {
   return sprite;
 }
 
+/* ===============================
+   PATH TEXTURE (Flow effect)
+ ================================ */
+const flowTexture = (() => {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128; // Power of 2
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+
+  // Create a dashed/pulsing line pattern
+  const grad = ctx.createLinearGradient(0, 0, 128, 0);
+  grad.addColorStop(0, "rgba(0, 255, 136, 0.1)");
+  grad.addColorStop(0.5, "rgba(0, 255, 136, 1.0)");
+  grad.addColorStop(1, "rgba(0, 255, 136, 0.1)");
+
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+
+  const text = new THREE.CanvasTexture(canvas);
+  text.wrapS = THREE.RepeatWrapping;
+  text.repeat.set(10, 1); // Repeat along the tube
+  return text;
+})();
+
 function createWorldPath() {
   pathGroup.clear();
   labelGroup.clear();
@@ -168,11 +192,13 @@ function createWorldPath() {
   const curve = new THREE.CatmullRomCurve3(points);
   const tubeGeo = new THREE.TubeGeometry(curve, path.length * 10, 0.08, 8, false);
   const tubeMat = new THREE.MeshBasicMaterial({
-    color: 0x00ff88,
+    map: flowTexture,
     transparent: true,
-    opacity: 0.8
+    opacity: 0.9,
+    side: THREE.DoubleSide
   });
   const pathLine = new THREE.Mesh(tubeGeo, tubeMat);
+  pathLine.name = "animatedPath";
   pathGroup.add(pathLine);
 
   // Add glowing nodes and labels
@@ -525,6 +551,9 @@ function animate() {
     }
     p.geometry.attributes.position.needsUpdate = true;
   });
+
+  // Animate Path Flow
+  flowTexture.offset.x -= 0.005; // Negative to move "forward"
 
   drawMiniMap();
   renderer.render(scene, camera);
