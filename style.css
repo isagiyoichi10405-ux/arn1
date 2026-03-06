@@ -58,8 +58,8 @@ body.light-theme #qr-overlay.success {
   flex-direction: column;
   align-items: center;
   gap: 15px;
-  z-index: 1500;
-  opacity: 0.6;
+  z-index: 2000;
+  opacity: 0.95;
   pointer-events: none;
 }
 
