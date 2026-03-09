@@ -476,6 +476,7 @@ function nextStep() {
 ================================ */
 const nextBtn = document.getElementById("nextBtn");
 const rerouteBtn = document.getElementById("rerouteBtn");
+const scanOverlay = document.getElementById("digital-scan");
 
 if (nextBtn) {
   nextBtn.onclick = nextStep;
@@ -483,6 +484,16 @@ if (nextBtn) {
 
 if (rerouteBtn) {
   rerouteBtn.onclick = () => {
+    // Trigger Digital Scan Animation
+    if (scanOverlay) {
+      scanOverlay.classList.add("active");
+      speak("Re-scanning campus environment...");
+
+      setTimeout(() => {
+        scanOverlay.classList.remove("active");
+      }, 2000);
+    }
+
     index = 0;
     current = path[0];
     arrived = false;

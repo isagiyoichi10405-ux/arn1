@@ -881,3 +881,86 @@ input:focus {
   transform: translate(-50%, -60%) scale(0.9) !important;
   transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
+
+/* --- DIGITAL SCAN OVERLAY --- */
+.digital-scan-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(0, 242, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  transition: opacity 0.3s ease;
+}
+
+.digital-scan-overlay.active {
+  opacity: 1;
+}
+
+.scan-line {
+  width: 100%;
+  height: 2px;
+  background: var(--primary);
+  box-shadow: 0 0 15px var(--primary);
+  opacity: 0;
+}
+
+.digital-scan-overlay.active .scan-line {
+  animation: scanSweep 1.5s ease-in-out infinite;
+}
+
+@keyframes scanSweep {
+  0% {
+    transform: translateY(-100vh);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.scan-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 242, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 242, 255, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.digital-scan-overlay.active .scan-grid {
+  opacity: 1;
+  animation: gridPulse 2s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+  0% {
+    opacity: 0.1;
+    scale: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+    scale: 1.05;
+  }
+
+  100% {
+    opacity: 0.1;
+    scale: 1;
+  }
+}
