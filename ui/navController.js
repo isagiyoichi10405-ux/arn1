@@ -533,15 +533,20 @@ function animate() {
   if (next && !arrived) {
     const p1 = campusCoords[current];
     const p2 = campusCoords[next];
-    const target = Math.atan2(p2.x - p1.x, p2.z - p1.z);
+
+    // Aligns with compass: 0 = North (-Z), PI/2 = East (+X)
+    const target = Math.atan2(p2.x - p1.x, -(p2.z - p1.z));
     const currentHeadingRad = THREE.MathUtils.degToRad(alphaHeading);
 
-    const diff = Math.abs(target - currentHeadingRad);
-    const normalizedDiff = Math.abs(((diff + Math.PI) % (Math.PI * 2)) - Math.PI);
+    // Calculate shortest angular distance
+    let diff = target - currentHeadingRad;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    const normalizedDiff = Math.abs(diff);
 
     if (normalizedDiff > WRONG_DIR_LIMIT) {
       wrongDirTimer++;
-      if (wrongDirTimer > 60) {
+      if (wrongDirTimer > 100) { // Increased from 60 to 100 for stability
         updateInstruction(true);
         warningOverlay.classList.add("active");
       }
