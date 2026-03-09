@@ -525,7 +525,6 @@ function animate() {
     const target = Math.atan2(p2.x - p1.x, p2.z - p1.z);
     const currentHeadingRad = THREE.MathUtils.degToRad(alphaHeading);
 
-    // World path logic continues...
     const diff = Math.abs(target - currentHeadingRad);
     const normalizedDiff = Math.abs(((diff + Math.PI) % (Math.PI * 2)) - Math.PI);
 
@@ -540,6 +539,10 @@ function animate() {
       updateInstruction(false);
       warningOverlay.classList.remove("active");
     }
+  } else {
+    // Ensure warning is cleared once reached or no next node
+    warningOverlay.classList.remove("active");
+    updateInstruction(false);
   }
 
   // Animate Particles
