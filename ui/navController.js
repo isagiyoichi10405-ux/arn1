@@ -463,7 +463,7 @@ function nextStep() {
     if (index === path.length - 1) {
       arrived = true;
       instruction.innerText = "Scan destination QR to confirm arrival";
-      speak("Destination reached. Please scan the QR code to confirm arrival.");
+      speak("Destination reached.");
     } else if (next) {
       const dist = approxDistance(current, next);
       speak(`Proceed ${dist} meters to ${next}`);
