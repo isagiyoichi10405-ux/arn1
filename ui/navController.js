@@ -181,6 +181,9 @@ const flowTexture = (() => {
   return text;
 })();
 
+let pathDrawProgress = 0;
+let maxPathVertices = 0;
+
 function createWorldPath() {
   pathGroup.clear();
   labelGroup.clear();
@@ -199,6 +202,12 @@ function createWorldPath() {
   });
   const pathLine = new THREE.Mesh(tubeGeo, tubeMat);
   pathLine.name = "animatedPath";
+  
+  // Initialize draw range for grow animation
+  maxPathVertices = tubeGeo.index ? tubeGeo.index.count : tubeGeo.attributes.position.count;
+  pathDrawProgress = 0;
+  tubeGeo.setDrawRange(0, 0);
+
   pathGroup.add(pathLine);
 
   // Add glowing nodes and labels
@@ -523,6 +532,17 @@ function animate() {
       child.scale.set(s, s, s);
     }
   });
+
+  // Animate Path Growth
+  if (pathDrawProgress < 1 && maxPathVertices > 0) {
+    pathDrawProgress += 0.015; // Growth speed
+    if (pathDrawProgress > 1) pathDrawProgress = 1;
+    
+    const pathLine = pathGroup.getObjectByName("animatedPath");
+    if (pathLine) {
+      pathLine.geometry.setDrawRange(0, Math.floor(pathDrawProgress * maxPathVertices));
+    }
+  }
 
   // World-Space Viewport Logic
   const currentPos = campusCoords[current];
